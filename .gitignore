@@ -1,2 +1,4 @@
-/dhis-metadata-monitor/.nb-gradle/
-/dhis-metadata-monitor/build/
+/.nb-gradle/
+/build/
+/.gradle/
+/target/
