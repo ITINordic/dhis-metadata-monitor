@@ -1,15 +1,11 @@
 package zw.mohcc.dhis;
 
-import com.mashape.unirest.http.HttpResponse;
-import com.mashape.unirest.http.JsonNode;
-import com.mashape.unirest.http.Unirest;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import spark.Request;
-import spark.Response;
+
 import static spark.Spark.*;
 
 public class DHISMetaDataMonitor {
@@ -24,15 +20,12 @@ public class DHISMetaDataMonitor {
 
             get("/hello", (req, res) -> "Hello World");
             // https://zim.dhis2.org/develop/api/categories/ru80fGU70hD.xml?fields=categoryOptions\[name,code,id\]
-            get("/monitor", (Request req, Response res) -> {
-                final HttpResponse<String> result = Unirest.get("https://zim.dhis2.org/develop/api/{type}/{id}")
-                        .routeParam("type", "categories")
-                        .routeParam("id", "ru80fGU70hD")
-                        .queryString("fields", "categoryOptions[name,code,id]")
-                        .basicAuth(prop.getProperty("username"), prop.getProperty("password"))
-                        .asString();
-                return result.getBody();
-            });
+            DHISQuery.builder()
+                    .url("https://zim.dhis2.org/develop/api/")
+                    .type("categories")
+                    .accept("application/json")
+                    .id("ru80fGU70hD")
+                    .field(Field.builder().name("categoryOptions").build());
         } catch (IOException ex) {
             Logger.getLogger(DHISMetaDataMonitor.class.getName()).log(Level.SEVERE, null, ex);
         } catch (Exception ex) {

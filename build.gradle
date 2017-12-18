@@ -1,5 +1,19 @@
-apply plugin: 'java'
+plugins {
+    id 'java'
+    id 'net.ltgt.apt' version '0.10'
+    id 'io.franzbecker.gradle-lombok' version '1.11'
+    id "com.github.opengl-BOBO.assertjGen2" version "2.0.0"
+}
 
+/*
+ * TODO: Fix bug running gradle build a second time producing the error below
+ * 
+ * Execution failed for task ':assertjGen'.
+ * > org/junit/rules/TestRule
+ * 
+ * WORK AROUND: use gradle clean build
+ * 
+*/
 sourceCompatibility = '1.8'
 [compileJava, compileTestJava]*.options*.encoding = 'UTF-8'
 
@@ -21,13 +35,21 @@ repositories {
     //   http://www.gradle.org/docs/current/userguide/dependency_management.html#sec:repositories
 }
 
+configurations {
+    delombok {
+        canBeResolved = true
+    }
+}
 dependencies {
     // TODO: Add dependencies here ...
     // You can read more about how to add dependency here:
     //   http://www.gradle.org/docs/current/userguide/dependency_management.html#sec:how_to_declare_your_dependencies
+    delombok 'com.sparkjava:spark-core:2.3'
+    delombok group: 'com.mashape.unirest', name: 'unirest-java', version: '1.4.9'
     compile 'com.sparkjava:spark-core:2.3'
     compile group: 'com.mashape.unirest', name: 'unirest-java', version: '1.4.9'
-    testCompile group: 'junit', name: 'junit', version: '4.10'
+    testCompile group: 'junit', name: 'junit', version: '4.9'
+    testCompile 'org.assertj:assertj-core:3.8.0'
 }
 
 
@@ -43,7 +65,43 @@ task fatJar(type: Jar) {
     with jar
 }
 
+lombok {
+    version = '1.16.18'
+    sha256 = "9d957f572386b9e257093a45b148f9b411cff80d9efd55eaf6fca27002d2e4d9"
+}
+
 artifacts {
     archives fatJar
 }
 
+sourceSets {
+    test {
+        java {
+            srcDirs assertjGen.resolveTargetDir(project)
+        }
+    }
+    gen.java.srcDir { "$buildDir/delombok" }
+}
+
+import io.franzbecker.gradle.lombok.task.DelombokTask
+
+task delombok(type: DelombokTask, dependsOn: compileJava) {
+    ext.outputDir = file("$buildDir/delombok")
+    outputs.dir(outputDir)
+    sourceSets.main.java.srcDirs.each { 
+        inputs.dir(it)
+        args(it, "-d", outputDir)
+    }
+}
+
+task delombokHelp(type: DelombokTask) {
+    args "--help"
+}
+
+assertjGen {
+    packages = ['zw.mohcc.dhis']
+    sourceSets = ['gen']
+    configurations = ['delombok']
+}
+
+tasks.assertjGen.dependsOn('compileGenJava')
