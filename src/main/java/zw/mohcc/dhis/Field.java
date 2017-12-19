@@ -6,6 +6,7 @@
 package zw.mohcc.dhis;
 
 import java.util.List;
+import java.util.stream.Collectors;
 import lombok.Builder;
 import lombok.Singular;
 
@@ -13,10 +14,31 @@ import lombok.Singular;
  *
  * @author cliffordc
  */
-
 @Builder
 public class Field {
-    String name;
+
+    private String name;
     @Singular
-    List<Field> fields;
+    private List<Field> fields;
+
+    StringBuilder renderField(StringBuilder build) {
+        build.append(name);
+        if(fields.isEmpty()) {
+            return build;
+        }
+        build.append("[");
+        renderFields(build, fields);
+        return build.append("]");
+    }
+
+    public static StringBuilder renderFields(StringBuilder build, List<Field> fields) {
+        if (fields != null) {
+            for (int i = 0; i < fields.size(); i++) {
+                Field field = fields.get(i);
+                if(i != 0) build.append(",");
+                field.renderField(build);
+            }
+        }
+        return build;
+    }
 }

@@ -6,6 +6,7 @@
 package zw.mohcc.dhis;
 
 import java.util.List;
+import java.util.stream.Collectors;
 import lombok.Builder;
 import lombok.Singular;
 
@@ -13,13 +14,45 @@ import lombok.Singular;
  *
  * @author cliffordc
  */
-
 @Builder
 public class DHISQuery {
-    String url;
-    String type;
-    String id;
-    String accept;
+
+    private String url;
+    private String type;
+    private String id;
+    private String accept;
     @Singular
-    List<Field> fields;
+    private List<Field> fields;
+
+    public String toURLString() {
+        StringBuilder build = new StringBuilder();
+        build = renderDHISQuery(build);
+        return build.toString();
+    }
+
+    protected StringBuilder renderDHISQuery(StringBuilder urlBuild) {
+        urlBuild = renderURL(urlBuild);
+        StringBuilder queryBuild = renderURLQuery();
+        if (queryBuild.length() != 0) {
+            urlBuild.append("?")
+                    .append(queryBuild);
+        }
+        return urlBuild;
+    }
+
+    private StringBuilder renderURLQuery() {
+        StringBuilder queryBuild = new StringBuilder();
+
+        queryBuild.append("fields=");
+        Field.renderFields(queryBuild, fields);
+        return queryBuild;
+    }
+
+    private StringBuilder renderURL(StringBuilder build) {
+        return build.append(url)
+                .append('/')
+                .append(type)
+                .append('/')
+                .append(id);
+    }
 }
