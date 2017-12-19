@@ -3,6 +3,7 @@ plugins {
     id 'net.ltgt.apt' version '0.10'
     id 'io.franzbecker.gradle-lombok' version '1.11'
     id "com.github.opengl-BOBO.assertjGen2" version "2.0.0"
+    id 'maven-publish'
 }
 
 /*
@@ -13,7 +14,7 @@ plugins {
  * 
  * WORK AROUND: use gradle clean build
  * 
-*/
+ */
 sourceCompatibility = '1.8'
 [compileJava, compileTestJava]*.options*.encoding = 'UTF-8'
 
@@ -80,3 +81,13 @@ assertjGen {
     generateAssertionsForAllFields = true
 }
 
+publishing {
+    publications {
+        mavenJava(MavenPublication) {
+            groupId 'zw.mohcc.dhis'
+            artifactId 'dhis-metadata-monitor'
+            version '1.0-SNAPSHOT'
+            from components.java
+        }
+    }
+}
