@@ -24,6 +24,8 @@ public class DHISQuery {
     private String accept;
     @Singular
     private List<Field> fields;
+    @Singular
+    private List<Filter> filters;
 
     public String toURLString() {
         StringBuilder build = new StringBuilder();
@@ -33,17 +35,25 @@ public class DHISQuery {
 
     protected StringBuilder renderDHISQuery(StringBuilder urlBuild) {
         urlBuild = renderURL(urlBuild);
-        StringBuilder queryBuild = renderURLQuery();
-        if (queryBuild.length() != 0) {
-            urlBuild.append("?")
-                    .append(queryBuild);
-        }
+        urlBuild = renderURLQuery(urlBuild);
         return urlBuild;
     }
 
-    private StringBuilder renderURLQuery() {
-        StringBuilder queryBuild = new StringBuilder();
+    private boolean querySeperator(boolean isFirst, StringBuilder queryBuild) {
+        queryBuild.append(isFirst ? "?" : "&");
+        return false;
+    }
+
+    private StringBuilder renderURLQuery(StringBuilder queryBuild) {
+        Boolean isFirst = true;
+        for (Filter filter : filters) {
+            querySeperator(isFirst, queryBuild);
+            queryBuild.append("filter=");
+            filter.renderFilter(queryBuild);
+        }
+
         if (fields.size() > 0) {
+            querySeperator(isFirst, queryBuild);
             queryBuild.append("fields=");
             Field.renderFields(queryBuild, fields);
         }
@@ -81,6 +91,10 @@ public class DHISQuery {
 
         public Field.FieldBuilder<DHISQuery.DHISQueryBuilder> beginField() {
             return Field.FieldBuilder.begin(f -> (DHISQuery.DHISQueryBuilder) this.field(f));
+        }
+
+        public Filter.FilterBuilder<DHISQuery.DHISQueryBuilder> beginFilter() {
+            return Filter.FilterBuilder.begin(f -> (DHISQuery.DHISQueryBuilder) this.filter(f));
         }
     }
 }
