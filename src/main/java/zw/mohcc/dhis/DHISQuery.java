@@ -6,6 +6,7 @@
 package zw.mohcc.dhis;
 
 import java.util.List;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 import lombok.Builder;
 import lombok.Singular;
@@ -14,7 +15,7 @@ import lombok.Singular;
  *
  * @author cliffordc
  */
-@Builder
+@Builder(toBuilder = true)
 public class DHISQuery {
 
     private String url;
@@ -42,17 +43,44 @@ public class DHISQuery {
 
     private StringBuilder renderURLQuery() {
         StringBuilder queryBuild = new StringBuilder();
-
-        queryBuild.append("fields=");
-        Field.renderFields(queryBuild, fields);
+        if (fields.size() > 0) {
+            queryBuild.append("fields=");
+            Field.renderFields(queryBuild, fields);
+        }
         return queryBuild;
     }
 
     private StringBuilder renderURL(StringBuilder build) {
-        return build.append(url)
+        build.append(url == null ? "http://uninitialised.example.com" : url)
                 .append('/')
-                .append(type)
-                .append('/')
-                .append(id);
+                .append(type == null ? "dataSets" : type);
+        if (id != null) {
+            build.append("/")
+                    .append(id);
+        }
+        return build;
+    }
+
+    public static DHISQueryBuilder builder() {
+        if (defaultQuery == null) {
+            return new DHISQueryBuilder();
+        } else {
+            return defaultQuery.toBuilder();
+        }
+
+    }
+
+    private static DHISQuery defaultQuery;
+
+    public static void setDefault(DHISQuery query) {
+        defaultQuery = query;
+
+    }
+
+    public static class DHISQueryBuilder {
+
+        public Field.FieldBuilder<DHISQuery.DHISQueryBuilder> beginField() {
+            return Field.FieldBuilder.begin(f -> (DHISQuery.DHISQueryBuilder) this.field(f));
+        }
     }
 }

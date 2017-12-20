@@ -8,8 +8,18 @@ package zw.mohcc.dhis;
 import org.junit.Test;
 import static zw.mohcc.dhis.Assertions.*;
 import static org.assertj.core.api.Assertions.*;
+import org.junit.Before;
+import org.junit.Rule;
 
 public class TestDHISQuery {
+
+    @Before
+    public void ResetDefaultQuery() {
+        DHISQuery.setDefault(null);
+    }
+
+    @Rule
+    public final JUnitSoftAssertions softly = new JUnitSoftAssertions();
 
     @Test
     public void TestDHISQueryBuilder() {
@@ -30,7 +40,7 @@ public class TestDHISQuery {
                 .field(field1)
                 .field(field2)
                 .build();
-        assertThat(field)
+        softly.assertThat(field)
                 .hasUrl(testURL)
                 .hasId(testId)
                 .hasType(testType)
@@ -50,7 +60,130 @@ public class TestDHISQuery {
                 .field(field1)
                 .field(field2)
                 .build();
-        assertThat(query.toURLString()).isEqualTo("http://example.com/api/people/100?fields=children,parent");
+        softly.assertThat(query.toURLString()).isEqualTo("http://example.com/api/people/100?fields=children,parent");
     }
 
+    @Test
+    public void TestDHISQueryBuilderToURLString() {
+
+        DHISQuery query = DHISQuery.builder()
+                .url("http://example.com/api")
+                .id("100")
+                .type("people")
+                .beginField()
+                .name("children")
+                .beginField()
+                .name("age")
+                .end()
+                .end()
+                .beginField()
+                .name("parent")
+                .end()
+                .build();
+
+        softly.assertThat(query.toURLString()).isEqualTo("http://example.com/api/people/100?fields=children[age],parent");
+    }
+
+    @Test
+    public void TestDHISQueryBuilderDefaults() {
+
+        DHISQuery defaultQuery = DHISQuery.builder()
+                .url("http://example.com/api")
+                .id("100")
+                .type("people")
+                .beginField()
+                .name("children")
+                .beginField()
+                .name("age")
+                .end()
+                .end()
+                .beginField()
+                .name("parent")
+                .end()
+                .build();
+
+        DHISQuery.setDefault(defaultQuery);
+        DHISQuery query = DHISQuery.builder().build();
+
+        softly.assertThat(query.toURLString()).isEqualTo("http://example.com/api/people/100?fields=children[age],parent");
+    }
+
+    @Test
+    public void TestDHISQueryBuilderMissingProperties() {
+
+        DHISQuery query = DHISQuery.builder()
+                // .url("http://example.com/api")
+                .id("100")
+                .type("people")
+                .beginField()
+                .name("children")
+                .beginField()
+                .name("age")
+                .end()
+                .end()
+                .beginField()
+                .name("parent")
+                .end()
+                .build();
+
+        softly.assertThat(query.toURLString()).isEqualTo("http://uninitialised.example.com/people/100?fields=children[age],parent");
+
+        DHISQuery missingUrl = DHISQuery.builder()
+                // .url("http://example.com/api")
+                .id("100")
+                .type("people")
+                .beginField()
+                .name("children")
+                .beginField()
+                .name("age")
+                .end()
+                .end()
+                .beginField()
+                .name("parent")
+                .end()
+                .build();
+
+        softly.assertThat(missingUrl.toURLString()).isEqualTo("http://uninitialised.example.com/people/100?fields=children[age],parent");
+
+        DHISQuery missingType = DHISQuery.builder()
+                .url("http://example.com/api")
+                .id("100")
+                // .type("people")
+                .beginField()
+                .name("children")
+                .beginField()
+                .name("age")
+                .end()
+                .end()
+                .beginField()
+                .name("parent")
+                .end()
+                .build();
+
+        softly.assertThat(missingType.toURLString()).isEqualTo("http://example.com/api/dataSets/100?fields=children[age],parent");
+
+        DHISQuery missingId = DHISQuery.builder()
+                .url("http://example.com/api")
+                // .id("100")
+                .type("people")
+                .beginField()
+                .name("children")
+                .beginField()
+                .name("age")
+                .end()
+                .end()
+                .beginField()
+                .name("parent")
+                .end()
+                .build();
+
+        softly.assertThat(missingId.toURLString()).isEqualTo("http://example.com/api/people?fields=children[age],parent");
+
+        DHISQuery missingFields = DHISQuery.builder()
+                .url("http://example.com/api")
+                .id("100")
+                .type("people")
+                .build();
+        softly.assertThat(missingFields.toURLString()).isEqualTo("http://example.com/api/people/100");
+    }
 }
