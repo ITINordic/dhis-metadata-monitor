@@ -3,18 +3,21 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package zw.mohcc.dhis;
+package zw.mohcc.dhis.apiclient;
 
 import java.util.List;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import lombok.Builder;
 import lombok.Singular;
+import lombok.Value;
 
 /**
  *
  * @author cliffordc
  */
+
+@Value
 @Builder
 public class Field {
 
@@ -45,7 +48,12 @@ public class Field {
         return build;
     }
 
+    public static Field.FieldBuilder<Field.FieldBuilder> simpleBuilder() {
+        return new Field.FieldBuilder<>();
+    }
+
     public static class FieldBuilder<T> {
+
         private Function<Field, T> callback;
 
         public T end() {
@@ -56,8 +64,8 @@ public class Field {
             Field.FieldBuilder<T> builder = new Field.FieldBuilder<>();
             builder.callback = callback;
             return builder;
-        } 
-        
+        }
+
         public Field.FieldBuilder<Field.FieldBuilder<T>> beginField() {
             return Field.FieldBuilder.begin(f -> (Field.FieldBuilder<T>) this.field(f));
         }

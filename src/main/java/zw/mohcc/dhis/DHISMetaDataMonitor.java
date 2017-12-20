@@ -1,5 +1,6 @@
 package zw.mohcc.dhis;
 
+import zw.mohcc.dhis.apiclient.DHISQuery;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;

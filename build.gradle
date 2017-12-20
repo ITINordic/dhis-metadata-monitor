@@ -77,7 +77,7 @@ sourceSets {
 }
 
 assertjGen {
-    classes = ['zw.mohcc.dhis.DHISQuery', 'zw.mohcc.dhis.Field']
+    classes = ['zw.mohcc.dhis.apiclient.DHISQuery', 'zw.mohcc.dhis.apiclient.Field', 'zw.mohcc.dhis.apiclient.Filter']
     generateAssertionsForAllFields = true
 }
 

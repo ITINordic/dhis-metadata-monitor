@@ -3,18 +3,21 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package zw.mohcc.dhis;
+package zw.mohcc.dhis.apiclient;
 
 import java.util.List;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import lombok.Builder;
 import lombok.Singular;
+import lombok.Value;
 
 /**
  *
  * @author cliffordc
  */
+
+@Value
 @Builder(toBuilder = true)
 public class DHISQuery {
 

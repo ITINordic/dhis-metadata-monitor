@@ -3,11 +3,11 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package zw.mohcc.dhis;
+package zw.mohcc.dhis.apiclient;
 
+import zw.mohcc.dhis.apiclient.Field;
+import zw.mohcc.dhis.apiclient.DHISQuery;
 import org.junit.Test;
-import static zw.mohcc.dhis.Assertions.*;
-import static org.assertj.core.api.Assertions.*;
 import org.junit.Before;
 import org.junit.Rule;
 
