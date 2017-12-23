@@ -186,4 +186,102 @@ public class TestDHISQuery {
                 .build();
         softly.assertThat(missingFields.toURLString()).isEqualTo("http://example.com/api/people/100");
     }
+
+    @Test
+    public void TestDHISQueryBuilderFilters() {
+        // single filter
+        DHISQuery query = DHISQuery.builder()
+                .url("http://example.com/api")
+                .id("100")
+                .type("people")
+                .beginFilter()
+                .lhs("code")
+                .op("eq")
+                .value("001")
+                .end()
+                .build();
+
+        softly.assertThat(query.toURLString()).isEqualTo("http://example.com/api/people/100?filter=code:eq:001");
+
+        // multiple filters
+        DHISQuery multipleFilters = DHISQuery.builder()
+                .url("http://example.com/api")
+                .id("100")
+                .type("people")
+                .beginFilter()
+                .lhs("code")
+                .op("eq")
+                .value("001")
+                .end()
+                .beginFilter()
+                .lhs("name")
+                .op("neq")
+                .value("myname")
+                .end()
+                .build();
+
+        softly.assertThat(multipleFilters.toURLString()).isEqualTo("http://example.com/api/people/100?filter=code:eq:001&filter=name:neq:myname");
+
+        // single filter no code
+        DHISQuery noCode = DHISQuery.builder()
+                .url("http://example.com/api")
+                .id("100")
+                .type("people")
+                .beginFilter()
+                // .lhs("code")
+                .op("eq")
+                .value("001")
+                .end()
+                .build();
+
+        softly.assertThat(noCode.toURLString()).isEqualTo("http://example.com/api/people/100?filter=id:eq:001");
+
+        // single filter no op
+        DHISQuery noOp = DHISQuery.builder()
+                .url("http://example.com/api")
+                .id("100")
+                .type("people")
+                .beginFilter()
+                .lhs("code")
+                // .op("eq")
+                .value("001")
+                .end()
+                .build();
+
+        softly.assertThat(noOp.toURLString()).isEqualTo("http://example.com/api/people/100?filter=code:eq:001");
+
+        // single filter no value
+        DHISQuery noValue = DHISQuery.builder()
+                .url("http://example.com/api")
+                .id("100")
+                .type("people")
+                .beginFilter()
+                .lhs("code")
+                .op("eq")
+                // .value("001")
+                .end()
+                .build();
+
+        softly.assertThat(noValue.toURLString()).isEqualTo("http://example.com/api/people/100?filter=code:eq");
+    }
+    
+        @Test
+    public void TestDHISQueryBuilderFieldAndFilters() {
+        // single filter
+        DHISQuery query = DHISQuery.builder()
+                .url("http://example.com/api")
+                .id("100")
+                .type("people")
+                .beginField()
+                .name("children")
+                .end()
+                .beginFilter()
+                .lhs("code")
+                .op("eq")
+                .value("001")
+                .end()
+                .build();
+
+        softly.assertThat(query.toURLString()).isEqualTo("http://example.com/api/people/100?filter=code:eq:001&fields=children");
+    }
 }

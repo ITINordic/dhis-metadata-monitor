@@ -5,12 +5,12 @@
  */
 package zw.mohcc.dhis.apiclient;
 
+import java.util.Base64;
 import java.util.List;
-import java.util.function.Function;
-import java.util.stream.Collectors;
 import lombok.Builder;
 import lombok.Singular;
 import lombok.Value;
+import okhttp3.Request;
 
 /**
  *
@@ -25,10 +25,25 @@ public class DHISQuery {
     private String type;
     private String id;
     private String accept;
+    private String username;
+    private String password;
     @Singular
     private List<Field> fields;
     @Singular
     private List<Filter> filters;
+
+    public Request toHttpClient() {
+        Request request = new Request.Builder()
+                .addHeader(
+                        "Authorization",
+                        getBasicAuthorization(username,
+                                password
+                        )
+                ).addHeader("Accept", accept)
+                .url(toURLString())
+                .build();
+        return request;
+    }
 
     public String toURLString() {
         StringBuilder build = new StringBuilder();
@@ -50,13 +65,13 @@ public class DHISQuery {
     private StringBuilder renderURLQuery(StringBuilder queryBuild) {
         Boolean isFirst = true;
         for (Filter filter : filters) {
-            querySeperator(isFirst, queryBuild);
+            isFirst = querySeperator(isFirst, queryBuild);
             queryBuild.append("filter=");
             filter.renderFilter(queryBuild);
         }
 
         if (fields.size() > 0) {
-            querySeperator(isFirst, queryBuild);
+            isFirst = querySeperator(isFirst, queryBuild);
             queryBuild.append("fields=");
             Field.renderFields(queryBuild, fields);
         }
@@ -72,6 +87,10 @@ public class DHISQuery {
                     .append(id);
         }
         return build;
+    }
+
+    public static String getBasicAuthorization(String username, String password) {
+        return "Basic " + Base64.getEncoder().encodeToString((username + ":" + password).getBytes());
     }
 
     public static DHISQueryBuilder builder() {

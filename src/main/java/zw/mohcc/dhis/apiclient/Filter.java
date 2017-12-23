@@ -31,7 +31,7 @@ public class Filter {
                 .append(op == null ? "eq" : op);
         if (values.isEmpty()) {
             // Do Nothing
-        } else if (op.equalsIgnoreCase("in")) {
+        } else if (op != null && op.equalsIgnoreCase("in")) {
             build.append(":[");
             for (int i = 0; i < values.size(); i++) {
                 if (i != 0) {
