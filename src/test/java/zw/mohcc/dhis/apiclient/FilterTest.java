@@ -5,15 +5,40 @@
  */
 package zw.mohcc.dhis.apiclient;
 
-import org.junit.Rule;
+import java.util.List;
+import org.junit.After;
+import org.junit.AfterClass;
+import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.Test;
+import static org.junit.Assert.*;
+import org.junit.Rule;
 import zw.mohcc.dhis.JUnitSoftAssertions;
 
 /**
  *
  * @author cliffordc
  */
-public class TestFilter {
+public class FilterTest {
+    
+    public FilterTest() {
+    }
+    
+    @BeforeClass
+    public static void setUpClass() {
+    }
+    
+    @AfterClass
+    public static void tearDownClass() {
+    }
+    
+    @Before
+    public void setUp() {
+    }
+    
+    @After
+    public void tearDown() {
+    }
 
     @Rule
     public final JUnitSoftAssertions softly = new JUnitSoftAssertions();
@@ -56,4 +81,5 @@ public class TestFilter {
                 .hasOp(null)
                 .hasNoValues();
     }
+    
 }

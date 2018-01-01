@@ -5,16 +5,40 @@
  */
 package zw.mohcc.dhis.apiclient;
 
-import org.junit.Rule;
+import org.junit.After;
+import org.junit.AfterClass;
+import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.Test;
+import org.junit.Rule;
 import zw.mohcc.dhis.JUnitSoftAssertions;
 
 /**
  *
  * @author cliffordc
  */
-public class TestField {
+public class FieldTest {
+    
+    public FieldTest() {
+    }
+    
+    @BeforeClass
+    public static void setUpClass() {
+    }
+    
+    @AfterClass
+    public static void tearDownClass() {
+    }
+    
+    @Before
+    public void setUp() {
+    }
+    
+    @After
+    public void tearDown() {
+    }
 
+    
     @Rule
     public final JUnitSoftAssertions softly = new JUnitSoftAssertions();
 
@@ -42,4 +66,5 @@ public class TestField {
                 .extracting("name")
                 .containsOnly(testField2);
     }
+    
 }

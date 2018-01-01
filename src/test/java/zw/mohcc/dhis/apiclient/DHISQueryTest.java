@@ -5,18 +5,38 @@
  */
 package zw.mohcc.dhis.apiclient;
 
-import org.junit.Test;
+import org.junit.After;
+import org.junit.AfterClass;
 import org.junit.Before;
+import org.junit.BeforeClass;
+import org.junit.Test;
 import org.junit.Rule;
 import zw.mohcc.dhis.JUnitSoftAssertions;
 
-public class TestDHISQuery {
-
-    @Before
-    public void ResetDefaultQuery() {
-
+/**
+ *
+ * @author cliffordc
+ */
+public class DHISQueryTest {
+    
+    public DHISQueryTest() {
     }
-
+    
+    @BeforeClass
+    public static void setUpClass() {
+    }
+    
+    @AfterClass
+    public static void tearDownClass() {
+    }
+    
+    @Before
+    public void setUp() {
+    }
+    
+    @After
+    public void tearDown() {
+    }
     @Rule
     public final JUnitSoftAssertions softly = new JUnitSoftAssertions();
 
@@ -281,5 +301,6 @@ public class TestDHISQuery {
                 .build();
 
         softly.assertThat(query.toURLString()).isEqualTo("http://example.com/api/people/100?filter=code:eq:001&fields=children");
-    }
+    }    
+    
 }
