@@ -48,7 +48,7 @@ public class Field {
         return build;
     }
 
-    public static Field.FieldBuilder<Field.FieldBuilder> simpleBuilder() {
+    public static Field.FieldBuilder<Field.FieldBuilder> builder() {
         return new Field.FieldBuilder<>();
     }
 

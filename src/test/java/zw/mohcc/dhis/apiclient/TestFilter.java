@@ -7,6 +7,7 @@ package zw.mohcc.dhis.apiclient;
 
 import org.junit.Rule;
 import org.junit.Test;
+import zw.mohcc.dhis.JUnitSoftAssertions;
 
 /**
  *

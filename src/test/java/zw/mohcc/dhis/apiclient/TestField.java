@@ -5,12 +5,9 @@
  */
 package zw.mohcc.dhis.apiclient;
 
-import java.util.function.Function;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import org.assertj.core.api.Condition;
 import org.junit.Rule;
 import org.junit.Test;
+import zw.mohcc.dhis.JUnitSoftAssertions;
 
 /**
  *
@@ -33,7 +30,7 @@ public class TestField {
         final String testField1 = "field1";
         final String testField2 = "field2";
 
-        Field field = Field.simpleBuilder()
+        Field field = Field.builder()
                 .name(testField1)
                 .beginField()
                 .name(testField2)

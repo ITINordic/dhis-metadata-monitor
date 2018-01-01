@@ -15,7 +15,6 @@ import lombok.Value;
  *
  * @author cliffordc
  */
-
 @Value
 @Builder
 public class Filter {
@@ -46,7 +45,11 @@ public class Filter {
         }
         return build;
     }
-
+    
+    public static Filter.FilterBuilder<Filter.FilterBuilder> builder() {
+        return new Filter.FilterBuilder<>();
+    }
+    
     public static class FilterBuilder<T> {
 
         private Function<Filter, T> callback;

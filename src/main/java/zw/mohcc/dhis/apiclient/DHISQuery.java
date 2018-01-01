@@ -5,18 +5,16 @@
  */
 package zw.mohcc.dhis.apiclient;
 
-import java.util.Base64;
 import java.util.List;
+import java.util.Map;
 import lombok.Builder;
 import lombok.Singular;
 import lombok.Value;
-import okhttp3.Request;
 
 /**
  *
  * @author cliffordc
  */
-
 @Value
 @Builder(toBuilder = true)
 public class DHISQuery {
@@ -31,18 +29,15 @@ public class DHISQuery {
     private List<Field> fields;
     @Singular
     private List<Filter> filters;
+    
+    @Builder.Default
+    private HttpClientFactory clientFactory = new OkHttpClientFactory();
+    
+    @Singular
+    private Map<String, String> headers;
 
-    public Request toHttpClient() {
-        Request request = new Request.Builder()
-                .addHeader(
-                        "Authorization",
-                        getBasicAuthorization(username,
-                                password
-                        )
-                ).addHeader("Accept", accept)
-                .url(toURLString())
-                .build();
-        return request;
+    public HttpClient toHttpClient() {
+        return clientFactory.getInstance(username, password, headers, toURLString());
     }
 
     public String toURLString() {
@@ -89,26 +84,6 @@ public class DHISQuery {
         return build;
     }
 
-    public static String getBasicAuthorization(String username, String password) {
-        return "Basic " + Base64.getEncoder().encodeToString((username + ":" + password).getBytes());
-    }
-
-    public static DHISQueryBuilder builder() {
-        if (defaultQuery == null) {
-            return new DHISQueryBuilder();
-        } else {
-            return defaultQuery.toBuilder();
-        }
-
-    }
-
-    private static DHISQuery defaultQuery;
-
-    public static void setDefault(DHISQuery query) {
-        defaultQuery = query;
-
-    }
-
     public static class DHISQueryBuilder {
 
         public Field.FieldBuilder<DHISQuery.DHISQueryBuilder> beginField() {
@@ -117,6 +92,10 @@ public class DHISQuery {
 
         public Filter.FilterBuilder<DHISQuery.DHISQueryBuilder> beginFilter() {
             return Filter.FilterBuilder.begin(f -> (DHISQuery.DHISQueryBuilder) this.filter(f));
+        }
+
+        public DHISQueryBuilder accept(String accept) {
+            return this.header("Accept", accept);
         }
     }
 }

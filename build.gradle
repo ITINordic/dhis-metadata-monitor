@@ -1,12 +1,11 @@
+
 plugins {
     id 'java'
     id 'idea'
-    id 'net.ltgt.apt' version '0.10'
-    id 'io.franzbecker.gradle-lombok' version '1.11'
+    id 'net.ltgt.apt-idea' version '0.13'
     id "com.github.opengl-BOBO.assertjGen2" version "2.0.0"
     id 'maven-publish'
 }
-
 /*
  * TODO: Fix bug running gradle build a second time producing the error below
  * 
@@ -34,13 +33,13 @@ repositories {
     mavenCentral()
     // You may define additional repositories, or even remove "mavenCentral()".
     // Read more about repositories here:
-    //   http://www.gradle.org/docs/current/userguide/dependency_management.html#sec:repositories
+    // http://www.gradle.org/docs/current/userguide/dependency_management.html#sec:repositories
 }
 
 dependencies {
     // TODO: Add dependencies here ...
     // You can read more about how to add dependency here:
-    //   http://www.gradle.org/docs/current/userguide/dependency_management.html#sec:how_to_declare_your_dependencies
+    // http://www.gradle.org/docs/current/userguide/dependency_management.html#sec:how_to_declare_your_dependencies
     compile 'com.sparkjava:spark-core:2.3'
     compile group: 'com.mashape.unirest', name: 'unirest-java', version: '1.4.9'
     // https://mvnrepository.com/artifact/org.eclipse.jgit/org.eclipse.jgit
@@ -50,7 +49,14 @@ dependencies {
     
     compile 'com.squareup.okhttp3:okhttp:3.9.1'
     // https://mvnrepository.com/artifact/commons-io/commons-io
-    compile group: 'commons-io', name: 'commons-io', version: '2.4'
+    compile 'commons-io:commons-io:2.4'
+    compile 'commons-beanutils:commons-beanutils:1.9.3'
+    compile 'com.google.dagger:dagger:2.14.1'
+    apt 'com.google.dagger:dagger-compiler:2.14.1'
+    
+    compileOnly 'org.projectlombok:lombok:1.16.18'
+    apt "org.projectlombok:lombok:1.16.18"
+    
     testCompile group: 'junit', name: 'junit', version: '4.9'
     testCompile 'org.assertj:assertj-core:3.8.0'
 }
@@ -68,11 +74,6 @@ task fatJar(type: Jar) {
     with jar
 }
 
-lombok {
-    version = '1.16.18'
-    sha256 = "9d957f572386b9e257093a45b148f9b411cff80d9efd55eaf6fca27002d2e4d9"
-}
-
 artifacts {
     archives fatJar
 }
@@ -83,11 +84,25 @@ sourceSets {
             srcDirs assertjGen.resolveTargetDir(project)
         }
     }
+    //    main {
+    //        java {
+    //            srcDirs = ['build/generated/source/apt/main','src/main/java']
+    //        }
+    //    }
 }
 
 assertjGen {
-    classes = ['zw.mohcc.dhis.apiclient.DHISQuery', 'zw.mohcc.dhis.apiclient.Field', 'zw.mohcc.dhis.apiclient.Filter']
+    classes = ['zw.mohcc.dhis.apiclient.DHISQuery'
+        , 'zw.mohcc.dhis.apiclient.Field'
+        , 'zw.mohcc.dhis.apiclient.Filter'
+        , 'zw.mohcc.dhis.gitclient.GitClient'
+        , 'zw.mohcc.dhis.gitclient.GitProcessingFailedException'
+        , 'zw.mohcc.dhis.monitor.MonitorConfig'
+        , 'zw.mohcc.dhis.monitor.DataSetGroupConfig']
+
+    entryPointClassPackage = 'zw.mohcc.dhis'
     generateAssertionsForAllFields = true
+
 }
 
 publishing {
@@ -102,8 +117,22 @@ publishing {
 }
 
 idea {
+    project {
+        // experimental: whether annotation processing will be configured in the IDE; only actually used with the 'idea' task.
+        configureAnnotationProcessing = true
+    }
     module {
-        downloadJavadoc = true
-        downloadSources = true
+        apt {
+            // whether generated sources dirs are added as generated sources root
+            addGeneratedSourcesDirs = true
+            // whether the apt and testApt dependencies are added as module dependencies
+            addAptDependencies = true
+
+            // The following are mostly internal details; you shouldn't ever need to configure them.
+            // whether the compileOnly and testCompileOnly dependencies are added as module dependencies
+            addCompileOnlyDependencies = false // defaults to true in Gradle < 2.12
+            // the dependency scope used for apt and/or compileOnly dependencies (when enabled above)
+            mainDependenciesScope = "PROVIDED" // defaults to "COMPILE" in Gradle < 3.4, or when using the Gradle integration in IntelliJ IDEA
+        }
     }
 }

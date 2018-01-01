@@ -3,9 +3,12 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package zw.mohcc.gitclient;
+package zw.mohcc.dhis.gitclient;
 
 import java.io.IOException;
+import java.io.ByteArrayOutputStream;
+import java.io.OutputStream;
+import java.io.StringWriter;
 import java.nio.file.Path;
 import java.time.LocalDateTime;
 import java.util.List;
@@ -99,9 +102,9 @@ public class GitClient {
     }
 // source: https://stackoverflow.com/questions/23486483/file-diff-against-the-last-commit-with-jgit
 
-    private static boolean diff(Git git) throws IOException {
+    private static boolean diff(Git git, OutputStream diffStream) throws IOException {
         boolean hasDiff = false;
-        DiffFormatter formatter = new DiffFormatter(System.out);
+        DiffFormatter formatter = new DiffFormatter(diffStream);
         formatter.setRepository(git.getRepository());
         AbstractTreeIterator commitTreeIterator = prepareTreeParser(git.getRepository(), Constants.HEAD);
         FileTreeIterator workTreeIterator = new FileTreeIterator(git.getRepository());
@@ -133,23 +136,26 @@ public class GitClient {
         }
     }
 
-    public void process(Path gitDirectory) throws GitProcessingFailedException {
+    public String process(Path gitDirectory) throws GitProcessingFailedException {
         OpenOrCreateRepoResult result;
         try {
             result = openOrCreateRepo(gitDirectory);
-
+            ByteArrayOutputStream diffStream = null;
             Git git = result.getGit();
             if (result.isNewRepo()) {
-                    addAndCommit(git, "initial commit");
+                addAndCommit(git, "initial commit");
 
             } else {
                 // Diff changes
                 listUncommitedChages(git);
-                if(diff(git)){
+                diffStream = new ByteArrayOutputStream();
+                if (diff(git, diffStream)) {
                     addAndCommit(git, "update");
                 }
 
             }
+            return diffStream == null ? "" : diffStream.toString();
+
         } catch (IOException | GitAPIException ex) {
             Logger.getLogger(GitClient.class.getName()).log(Level.SEVERE, null, ex);
             throw new GitProcessingFailedException(ex);

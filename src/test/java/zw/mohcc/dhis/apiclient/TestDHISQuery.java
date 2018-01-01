@@ -5,17 +5,16 @@
  */
 package zw.mohcc.dhis.apiclient;
 
-import zw.mohcc.dhis.apiclient.Field;
-import zw.mohcc.dhis.apiclient.DHISQuery;
 import org.junit.Test;
 import org.junit.Before;
 import org.junit.Rule;
+import zw.mohcc.dhis.JUnitSoftAssertions;
 
 public class TestDHISQuery {
 
     @Before
     public void ResetDefaultQuery() {
-        DHISQuery.setDefault(null);
+
     }
 
     @Rule
@@ -102,8 +101,7 @@ public class TestDHISQuery {
                 .end()
                 .build();
 
-        DHISQuery.setDefault(defaultQuery);
-        DHISQuery query = DHISQuery.builder().build();
+        DHISQuery query = defaultQuery.toBuilder().build();
 
         softly.assertThat(query.toURLString()).isEqualTo("http://example.com/api/people/100?fields=children[age],parent");
     }

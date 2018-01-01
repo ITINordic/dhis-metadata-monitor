@@ -3,12 +3,12 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package zw.mohcc.gitclient;
+package zw.mohcc.dhis.gitclient;
 
 import java.io.IOException;
 import java.nio.file.Path;
 import org.apache.commons.io.FileUtils;
-import static org.assertj.core.api.Assertions.fail;
+import org.assertj.core.api.StringAssert;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
@@ -16,6 +16,7 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.Rule;
 import org.junit.rules.TemporaryFolder;
+import zw.mohcc.dhis.JUnitSoftAssertions;
 
 /**
  *
@@ -25,6 +26,9 @@ public class GitClientTest {
 
     @Rule
     public TemporaryFolder gitDirectory = new TemporaryFolder();
+
+    @Rule
+    public final JUnitSoftAssertions softly = new JUnitSoftAssertions();
 
     public GitClientTest() {
     }
@@ -75,8 +79,8 @@ public class GitClientTest {
         gitClient.process(gitDir);
         writeStringToFile(data1path, data1v2);
         writeStringToFile(data2path, data2v2);
-        gitClient.process(gitDir);
-        fail("experiement with jgit api");
+        String process = gitClient.process(gitDir);
+        StringAssert equalTo = softly.assertThat(process).isEqualTo("");
 
     }
 
@@ -84,26 +88,26 @@ public class GitClientTest {
     public void testProcessModfied() throws Exception {
         System.out.println("process");
         GitClient gitClient = new GitClient();
-        
+
         final String data1v1 = "hello world, this is a data1 file.\n"
-                + "first changing v1\n"
+                + "first changing d1v1\n"
                 + "no change\n"
-                + "second changing v1\n"
+                + "second changing d1v1\n"
                 + "no change\n";
         final String data1v2 = "hello world, this is a data1 file.\n"
-                + "first changing v2\n"
+                + "first changing d1v2\n"
                 + "no change\n"
-                + "second changing v2\n"
+                + "second changing d1v2\n"
                 + "no change\n";
         final String data2v1 = "hello world, this is a data2 file.\n"
-                + "first changing v1\n"
+                + "first changing d2v1\n"
                 + "no change\n"
-                + "second changing v1\n"
+                + "second changing d2v1\n"
                 + "no change\n";
         final String data2v2 = "hello world, this is a data2 file.\n"
-                + "first changing v2\n"
+                + "first changing d2v2\n"
                 + "no change\n"
-                + "second changing v2\n"
+                + "second changing d2v2\n"
                 + "no change\n";
         final Path gitDir = gitDirectory.getRoot().toPath();
         final Path data1path = gitDir.resolve("data1.txt");
@@ -113,8 +117,48 @@ public class GitClientTest {
         gitClient.process(gitDir);
         writeStringToFile(data1path, data1v2);
         writeStringToFile(data2path, data2v2);
-        gitClient.process(gitDir);
-        fail("experiement with jgit api");
+        String process = gitClient.process(gitDir);
+        
+// Sample result
+//        String diff = "diff --git a/data1.txt b/data1.txt\n"
+//                + "index 4fa2dfe..f306177 100644\n"
+//                + "--- a/data1.txt\n"
+//                + "+++ b/data1.txt\n"
+//                + "@@ -1,5 +1,5 @@\n"
+//                + " hello world, this is a data1 file.\n"
+//                + "-first changing v1\n"
+//                + "+first changing v2\n"
+//                + " no change\n"
+//                + "-second changing v1\n"
+//                + "+second changing v2\n"
+//                + " no change\n"
+//                + "diff --git a/data2.txt b/data2.txt\n"
+//                + "index 1c2daa3..410093d 100644\n"
+//                + "--- a/data2.txt\n"
+//                + "+++ b/data2.txt\n"
+//                + "@@ -1,5 +1,5 @@\n"
+//                + " hello world, this is a data2 file.\n"
+//                + "-first changing v1\n"
+//                + "+first changing v2\n"
+//                + " no change\n"
+//                + "-second changing v1\n"
+//                + "+second changing v2\n"
+//                + " no change\n";
+       
+        softly.assertThat(process).contains("--- a/data1.txt");
+        softly.assertThat(process).contains("+++ b/data1.txt");
+        softly.assertThat(process).contains("--- a/data2.txt");
+        softly.assertThat(process).contains("+++ b/data2.txt");
+
+        softly.assertThat(process).contains("-first changing d1v1");
+        softly.assertThat(process).contains("+first changing d1v2");
+        softly.assertThat(process).contains("-second changing d1v1");
+        softly.assertThat(process).contains("+second changing d1v2");
+
+        softly.assertThat(process).contains("-first changing d2v1");
+        softly.assertThat(process).contains("+first changing d2v2");
+        softly.assertThat(process).contains("-second changing d2v1");
+        softly.assertThat(process).contains("+second changing d2v2");
 
     }
 
