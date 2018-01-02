@@ -1,0 +1,36 @@
+{
+    "dataSets": [
+        {
+            "code": "D1",
+            "name": "D1 NAME",
+            "id": "RDEgTkFNRQo=",
+            "periodType": "Monthly",
+            "categoryCombo": {
+                "categories": [
+                    {
+                        "code": "CAT1",
+                        "name": "CAT1 NAME"
+                    }
+                ]
+            },
+            "organisationUnits": [
+                {
+                    "code": "ORG1",
+                    "name": "ORG1 NAME",
+                    "id": "eANtdLc9zeW"
+                },
+                {
+                    "code": "ZW050426",
+                    "name": "mn Jotsholo Clinic",
+                    "id": "ru92cefCXx3"
+                },
+                {
+                    "code": "ZW070552",
+                    "name": "mi Rio Tinto Clinic",
+                    "id": "ShaUoNIfalb"
+                }
+            ]
+        }
+    ]
+}
+    

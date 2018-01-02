@@ -10,6 +10,7 @@ import java.io.IOException;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.nio.file.Path;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
@@ -22,12 +23,12 @@ import lombok.Builder;
 import lombok.Singular;
 import lombok.Value;
 import org.apache.commons.beanutils.PropertyUtils;
+import zw.mohcc.dhis.apiclient.HttpClientFactory;
 
 /**
  *
  * @author cliffordc
  */
-
 @Builder
 @Value
 public class MonitorConfig {
@@ -35,41 +36,59 @@ public class MonitorConfig {
     private String apiRootUrl;
     private String username;
     private String password;
-    private Path userHome;
+    private Path appHome;
+    private HttpClientFactory clientFactory;
 
     @Singular
     private Set<DataSetGroupConfig> dataSetGroups;
 
     public static class MonitorConfigBuilder {
 
-        public MonitorConfigBuilder addJsonConfig(MonitorConfigBuilder builder, String json) {
+        public MonitorConfigBuilder addJsonConfig(String json) {
+
             ObjectMapper mapper = new ObjectMapper();
             try {
-                MonitorConfigBuilder build = mapper.readValue(json, MonitorConfigBuilder.class);
-                PropertyUtils.copyProperties(build, this);
-            } catch (IOException | IllegalAccessException | InvocationTargetException | NoSuchMethodException ex) {
+                MonitorConfig config = mapper.readValue(json, MonitorConfig.class);
+
+                for (Field field : MonitorConfig.class.getDeclaredFields()) {
+                    final String name = field.getName();
+                    updateFields(name, PropertyUtils.getProperty(config, name));
+                }
+            } catch (IllegalAccessException
+                    | InvocationTargetException
+                    | NoSuchMethodException
+                    | NoSuchFieldException
+                    | IOException ex) {
                 Logger.getLogger(MonitorConfig.class.getName()).log(Level.SEVERE, null, ex);
             }
-
             return this;
         }
 
         private boolean updateStringFields(final String key, final Object value) {
             try {
-                Field field = MonitorConfig.class.getField(key);
+                Field field = MonitorConfig.class.getDeclaredField(key);
                 if (!field.getType().equals(String.class)) {
                     return false;
                 }
-                PropertyUtils.setProperty(this, key, value);
+                updateFields(key, value);
+                return true;
             } catch (NoSuchFieldException
                     | SecurityException
-                    | IllegalAccessException
-                    | InvocationTargetException
-                    | NoSuchMethodException ex) {
+                    | IllegalAccessException ex) {
                 Logger.getLogger(MonitorConfig.class.getName()).log(Level.SEVERE, null, ex);
                 return false;
             }
-            return true;
+        }
+
+        private void updateFields(final String key, final Object value) throws IllegalAccessException, NoSuchFieldException {
+            Field builderField = MonitorConfigBuilder.class.getDeclaredField(key);
+            // FIXME: work around different types used between MonitorConfig and MonitorConfigBuilder
+            if (value instanceof Set) {
+                builderField.set(this, new ArrayList((Set)value));
+
+            } else {
+                builderField.set(this, value);
+            }
         }
 
         public MonitorConfigBuilder addPropertiesConfig(Properties properties) {
@@ -81,10 +100,10 @@ public class MonitorConfig {
                 final String key = (String) en.getKey();
                 final String value = (String) en.getValue();
                 Matcher match = isDataSet.matcher(key);
-                final String name = match.group("name");
-                final String prop = match.group("prop");
 
                 if (match.matches()) {
+                    final String name = match.group("name");
+                    final String prop = match.group("prop");
                     DataSetGroupConfig.DataSetGroupConfigBuilder<DataSetGroupConfig> buildDataSetGroup;
 
                     if (!dataSetMap.containsKey(name)) {
@@ -107,7 +126,7 @@ public class MonitorConfig {
                 }
 
             }
-            
+
             dataSetMap.values().forEach((buildDataSetGroup) -> {
                 this.dataSetGroup(buildDataSetGroup.build());
             });
@@ -115,7 +134,7 @@ public class MonitorConfig {
             return this;
         }
 
-        public DataSetGroupConfig.DataSetGroupConfigBuilder beginDataSet() {
+        public DataSetGroupConfig.DataSetGroupConfigBuilder<MonitorConfigBuilder> beginDataSet() {
             return DataSetGroupConfig.DataSetGroupConfigBuilder.begin((DataSetGroupConfig dsgc) -> {
                 return this.dataSetGroup(dsgc);
             });

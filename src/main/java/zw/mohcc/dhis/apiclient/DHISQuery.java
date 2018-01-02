@@ -37,7 +37,9 @@ public class DHISQuery {
     private Map<String, String> headers;
 
     public HttpClient toHttpClient() {
-        return clientFactory.getInstance(username, password, headers, toURLString());
+        final HttpClientFactory hcf;
+        hcf = clientFactory == null ? new OkHttpClientFactory() : clientFactory;
+        return hcf.getInstance(username, password, headers, toURLString());
     }
 
     public String toURLString() {
