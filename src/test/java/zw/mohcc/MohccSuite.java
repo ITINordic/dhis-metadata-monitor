@@ -17,7 +17,7 @@ import org.junit.runners.Suite;
  * @author cliffordc
  */
 @RunWith(Suite.class)
-@Suite.SuiteClasses({zw.mohcc.dhis.DhisSuite.class, zw.mohcc.dhis.gitclient.GitclientSuite.class})
+@Suite.SuiteClasses({zw.mohcc.dhis.DhisSuite.class, zw.mohcc.dhis.gitclient.GitclientSuite.class, zw.mohcc.dhis.monitor.MonitorSuite.class})
 public class MohccSuite {
 
     @BeforeClass

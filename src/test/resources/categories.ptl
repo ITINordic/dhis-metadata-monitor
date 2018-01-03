@@ -1,0 +1,9 @@
+{
+    "categories": [
+        {
+            "code": "{{code}}",
+            "name": "{{name}}",
+            "id": "{{id}}"
+        }
+    ]
+}

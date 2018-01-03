@@ -1,0 +1,30 @@
+{
+    "dataSets": [
+        {
+            "code": "{{code}}",
+            "name": "{{name}}",
+            "id": "{{id}}",
+            "periodType": "{{periodType}}",
+            "categoryCombo": {
+                "categories": [
+{% for cat in categoryCombo.categories %}
+                    {
+                        "code": "{{cat.code}}",
+                        "name": "{{cat.name}}"
+                    }{%if loop.index < loop.length - 1 %},{% endif %} 
+{% endfor %}
+                ]
+            },
+            "organisationUnits": [
+{% for org in organisationUnits %}
+                {
+                    "code": "{{org.code}}",
+                    "name": "{{org.name}}",
+                    "id": "{{org.id}}"
+                }{%if loop.index < loop.length - 1 %},{% endif %} 
+{% endfor %}
+            ]
+        }
+    ]
+}
+    

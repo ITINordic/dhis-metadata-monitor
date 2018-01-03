@@ -26,6 +26,8 @@ import static spark.Spark.get;
 import zw.mohcc.dhis.apiclient.DHISQuery;
 import zw.mohcc.dhis.apiclient.HttpClient;
 import zw.mohcc.dhis.apiclient.HttpClientFactory;
+import zw.mohcc.dhis.gitclient.GitClient;
+import zw.mohcc.dhis.gitclient.GitProcessingFailedException;
 
 /**
  *
@@ -70,19 +72,25 @@ public class DhisMonitorApp {
     }
 
     String monitor() {
-        StringBuilder sb = new StringBuilder();
-        final Path repo = config.getAppHome().resolve("repo");
-        Map<String, DataSetGroupConfig> notifyGroupMap = new HashMap<>();
-        Map<String, Set<String>> notifyMap = new HashMap<>();
-        Set<String> processed = new HashSet<>();
-        for (DataSetGroupConfig dataSetGroupConfig : config.getDataSetGroups()) {
-            final String dataSetGroupId = dhisUniqueObjectId(dataSetGroupConfig.getName(), "emailGroup");
-            notifyGroupMap.put(dataSetGroupId, dataSetGroupConfig);
-            for (String code : dataSetGroupConfig.getDataSets()) {
-                populateDataSets(code, dataSetGroupId, notifyMap, processed, repo);
+        try {
+            StringBuilder sb = new StringBuilder();
+            final Path repo = config.getAppHome().resolve("repo");
+            Map<String, DataSetGroupConfig> notifyGroupMap = new HashMap<>();
+            Map<String, Set<String>> notifyMap = new HashMap<>();
+            Set<String> processed = new HashSet<>();
+            for (DataSetGroupConfig dataSetGroupConfig : config.getDataSetGroups()) {
+                final String dataSetGroupId = dhisUniqueObjectId(dataSetGroupConfig.getName(), "emailGroup");
+                notifyGroupMap.put(dataSetGroupId, dataSetGroupConfig);
+                for (String code : dataSetGroupConfig.getDataSets()) {
+                    populateDataSets(code, dataSetGroupId, notifyMap, processed, repo);
+                }
             }
+            GitClient gitClient = new GitClient();
+            return gitClient.process(repo);
+        } catch (GitProcessingFailedException ex) {
+            Logger.getLogger(DhisMonitorApp.class.getName()).log(Level.SEVERE, null, ex);
         }
-        return sb.toString();
+        return "Error: " + GitProcessingFailedException.GIT_PROCESSING_FAILED_EXCEPTION_DHIS_MONITOR;
     }
 
     // QUERY="fields=name,id,code,periodType,categoryCombo\[categories\[name,code,\[categoryOptions\]\]\],\
@@ -94,7 +102,7 @@ public class DhisMonitorApp {
         addDepNotifyRequest(notifyMap, depObjectId, parentObjectId);
         if (processed.add(depObjectId)) {
             DHISQuery query = dhisQueryBuilder()
-                    .type("DataSets")
+                    .type("dataSets")
                     .beginField()
                     .name("organisationUnits")
                     .beginField().name("name").end()
@@ -138,7 +146,7 @@ public class DhisMonitorApp {
         }
     }
 
-    private static String dhisUniqueObjectId(String code, String type) {
+    static String dhisUniqueObjectId(String code, String type) {
         return String.format("%s-%s", code, type);
     }
 
@@ -217,7 +225,7 @@ public class DhisMonitorApp {
     }
 
     private void writeFile(String filename, final Path repo, String result) throws IOException {
-        FileUtils.writeStringToFile(repo.resolve(filename).toFile(), result);
+        FileUtils.writeStringToFile(repo.resolve(filename + ".json").toFile(), result);
     }
 
     private void addDepNotifyRequest(Map<String, Set<String>> notifyMap, final String depObjectId, String parentObjectId) {

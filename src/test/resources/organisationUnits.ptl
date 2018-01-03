@@ -1,0 +1,9 @@
+{
+    "organisationUnits": [
+        {
+            "code": "{{code}}",
+            "name": "{{name}}",
+            "id": "{{id}}"
+        }
+    ]
+}
