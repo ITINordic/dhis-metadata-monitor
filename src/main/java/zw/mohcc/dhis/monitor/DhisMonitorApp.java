@@ -11,14 +11,20 @@ import com.jayway.jsonpath.Configuration;
 import com.jayway.jsonpath.DocumentContext;
 import com.jayway.jsonpath.JsonPath;
 import java.io.IOException;
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.nio.file.Path;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Scanner;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.stream.Collectors;
 import org.apache.commons.io.FileUtils;
 import spark.Request;
 import spark.Response;
@@ -65,13 +71,13 @@ public class DhisMonitorApp {
 
     public void start() {
         get("/monitor", (Request req, Response res) -> {
-            res.body(monitor());
+            res.body(monitor().values().stream().collect(Collectors.joining("\n")));
             return res;
         });
 
     }
 
-    String monitor() {
+    Map<String, String> monitor() {
         try {
             StringBuilder sb = new StringBuilder();
             final Path repo = config.getAppHome().resolve("repo");
@@ -86,11 +92,28 @@ public class DhisMonitorApp {
                 }
             }
             GitClient gitClient = new GitClient();
-            return gitClient.process(repo);
+            String diffString = gitClient.process(repo);
+            Scanner scanner = new Scanner(diffString);
+
+            Map<String,String> diffs = new HashMap<>();
+            StringWriter sw = new StringWriter();
+            PrintWriter pw = new PrintWriter(sw);
+            while (scanner.hasNextLine()) {
+                String line = scanner.nextLine();
+                pw.println(line);
+                if (line.startsWith("diff --git")) {
+                    diffs.put(line.substring(line.lastIndexOf("/") + 1), sw.toString());
+                    pw.close();
+                    sw = new StringWriter();
+                    pw = new PrintWriter(sw);
+                }
+            }
+            scanner.close();
+            return diffs;
         } catch (GitProcessingFailedException ex) {
             Logger.getLogger(DhisMonitorApp.class.getName()).log(Level.SEVERE, null, ex);
         }
-        return "Error: " + GitProcessingFailedException.GIT_PROCESSING_FAILED_EXCEPTION_DHIS_MONITOR;
+        return Collections.emptyMap();
     }
 
     // QUERY="fields=name,id,code,periodType,categoryCombo\[categories\[name,code,\[categoryOptions\]\]\],\

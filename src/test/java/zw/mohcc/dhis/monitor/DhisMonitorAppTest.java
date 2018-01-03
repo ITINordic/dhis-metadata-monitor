@@ -185,7 +185,7 @@ public class DhisMonitorAppTest {
         defineObjects();
 
         DhisMonitorApp instance = new DhisMonitorApp(config);
-        String monitor = instance.monitor();
+        Map<String, String> monitor = instance.monitor();
         final Path repo = root.resolve("repo");
         softly.assertThat(repo.resolve(".git")).exists();
         for (String key : dhisObjects.keySet()) {
@@ -197,7 +197,7 @@ public class DhisMonitorAppTest {
         for (File file : FileUtils.listFilesAndDirs(root.toFile(), TrueFileFilter.INSTANCE, TrueFileFilter.INSTANCE)) {
             System.out.println(file.getPath());
         }
-        System.out.println(monitor);
+        System.out.println(monitor.values().stream().collect(Collectors.joining("\n\n")));
     }
 
     @Test
@@ -218,12 +218,12 @@ public class DhisMonitorAppTest {
         defineObjects();
 
         DhisMonitorApp instance = new DhisMonitorApp(config);
-        String monitor1 = instance.monitor();
+        Map<String, String> monitor1 = instance.monitor();
         
         // second commit
         Map<String, Object> cat01 = dhisObjects.get(postfixString(CATEGORIES, "cat01"));
         cat01.put(NAME, "changed name");
-        String monitor2 = instance.monitor();
+        Map<String, String> monitor2 = instance.monitor();
 
         final Path repo = root.resolve("repo");
         softly.assertThat(repo.resolve(".git")).exists();
@@ -236,8 +236,10 @@ public class DhisMonitorAppTest {
         for (File file : FileUtils.listFilesAndDirs(root.toFile(), TrueFileFilter.INSTANCE, TrueFileFilter.INSTANCE)) {
             System.out.println(file.getPath());
         }
-        System.out.println(monitor1);
-        System.out.println(monitor2);
+        System.out.println(monitor1.values().stream().collect(Collectors.joining("\n\n")));
+        System.out.println(monitor1.keySet().stream().collect(Collectors.joining("\n\n")));
+        System.out.println(monitor2.values().stream().collect(Collectors.joining("\n\n")));
+        System.out.println(monitor2.keySet().stream().collect(Collectors.joining("\n\n")));
     }
 
     private Properties loadConfigProp() {

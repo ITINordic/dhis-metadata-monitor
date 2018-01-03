@@ -8,7 +8,6 @@ package zw.mohcc.dhis.gitclient;
 import java.io.IOException;
 import java.io.ByteArrayOutputStream;
 import java.io.OutputStream;
-import java.io.StringWriter;
 import java.nio.file.Path;
 import java.time.LocalDateTime;
 import java.util.List;
@@ -109,7 +108,8 @@ public class GitClient {
         AbstractTreeIterator commitTreeIterator = prepareTreeParser(git.getRepository(), Constants.HEAD);
         FileTreeIterator workTreeIterator = new FileTreeIterator(git.getRepository());
         List<DiffEntry> diffEntries = formatter.scan(commitTreeIterator, workTreeIterator);
-
+        formatter.setOldPrefix("old/");
+        formatter.setNewPrefix("new/");
         for (DiffEntry entry : diffEntries) {
             hasDiff = true;
             formatter.format(entry);
