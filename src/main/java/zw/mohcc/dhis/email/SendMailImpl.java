@@ -1,5 +1,6 @@
 package zw.mohcc.dhis.email;
 
+import java.util.Map;
 import java.util.Properties;
 import javax.mail.Message;
 import javax.mail.MessagingException;
@@ -21,13 +22,33 @@ public class SendMailImpl {
 
     private String username;
     private String password;
+    private Properties props;
 
     public SendMailImpl() {
+        props = new Properties();
+        props.put("mail.smtp.host", SMTP_HOST_NAME);
+        props.put("mail.smtp.auth", "false");
+        props.put("mail.debug", "true");
+        props.put("mail.smtp.port", SMTP_PORT);
+        props.put("mail.smtp.socketFactory.port", SMTP_PORT);
+        props.put("mail.smtp.socketFactory.class", SSL_FACTORY);
+        props.put("mail.smtp.socketFactory.fallback", "true");
+        props.put("mail.default.email", "info@example.org");
+
     }
 
-    public SendMailImpl(String username, String password) {
-        this.username = username;
-        this.password = password;
+    public SendMailImpl(Properties props) {
+        this();
+        this.username = props.getProperty("mail.smtp.user");
+        this.password = props.getProperty("mail.smtp.passwd");
+        this.props.putAll(props);
+    }
+
+    public SendMailImpl(Map<String, String> settings) {
+        this();
+        this.username = settings.get("mail.smtp.user");
+        this.password = settings.get("mail.smtp.passwd");
+        this.props.putAll(settings);
     }
 
     /* (non-Javadoc)
@@ -39,16 +60,7 @@ public class SendMailImpl {
     ) throws MessagingException {
 
         // Security.addProvider(new com.sun.net.ssl.internal.ssl.Provider());
-        boolean debug = true;
-
-        Properties props = new Properties();
-        props.put("mail.smtp.host", SMTP_HOST_NAME);
-        props.put("mail.smtp.auth", "false");
-        props.put("mail.debug", "true");
-        props.put("mail.smtp.port", SMTP_PORT);
-        props.put("mail.smtp.socketFactory.port", SMTP_PORT);
-        props.put("mail.smtp.socketFactory.class", SSL_FACTORY);
-        props.put("mail.smtp.socketFactory.fallback", "true");
+        boolean debug = Boolean.valueOf(props.getProperty("mail.debug"));
 
         Session session = Session.getDefaultInstance(props, new javax.mail.Authenticator() {
             @Override
@@ -110,6 +122,7 @@ public class SendMailImpl {
         this.password = password;
     }
 
+    // Sample usage
     public static void main(String[] args) throws MessagingException {
         SendMailImpl sendMailImpl = new SendMailImpl();
         sendMailImpl.sendMessage("info@sadombo.itinordic.com", new String[]{"cchigoriwa@gmail.com", "cliffordhc@gmail.com", "matavirer@gmail.com", "bobjolliffe@gmail.com"}, "Test message from Sadombo", "<b>Test Message from Sadombo<b>");

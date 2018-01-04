@@ -167,7 +167,7 @@ public class DhisMonitorApp {
             // send emails
             for (Notify value : notifySet) {
                 final String email = value.getGroup().getEmail();
-                emailClient.sendEmail(email, value.getMessages().stream().collect(Collectors.joining("\n\n\n")));
+                emailClient.sendMessage("", new String[]{email}, "DHIS Monitoring Report", value.getMessages().stream().collect(Collectors.joining("\n\n\n")));
             }
 
             return notifySet;

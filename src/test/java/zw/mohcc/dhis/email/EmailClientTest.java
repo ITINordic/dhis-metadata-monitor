@@ -21,7 +21,7 @@ import zw.mohcc.dhis.JUnitSoftAssertions;
  */
 public class EmailClientTest {
 
-    private Map<String, String> sentEmail;
+    private Map<String, Object> sentEmail;
 
     @Rule
     public final JUnitSoftAssertions softly = new JUnitSoftAssertions();
@@ -52,37 +52,24 @@ public class EmailClientTest {
     @Test
     public void testSendEmail() {
         System.out.println("sendEmail");
-        String email = "user@example.org";
-        String msg = "hello";
+        String from = "info@example.org";
+        String msg = "hello world";
+        String subject = "hello";
+        String[] toEmails = new String[]{"jane@example.org", "john@example.org"};
         EmailClient instance = new EmailClientImpl();
-        instance.sendEmail(email, msg);
-        final Map.Entry<String, String> emailEntry = createEmailEntry(email, msg);
-        softly.assertThat(sentEmail).containsOnly(emailEntry);
+        instance.sendMessage(from, toEmails, subject, msg);
+        // softly;
     }
 
-    private static Map.Entry<String, String> createEmailEntry(String email, String msg) {
-        return new Map.Entry<String, String>() {
-            @Override
-            public String getKey() {
-                return email;
-            }
-
-            @Override
-            public String getValue() {
-                return msg;
-            }
-
-            @Override
-            public String setValue(String value) {
-                throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-            }
-        };
-    }
 
     public class EmailClientImpl implements EmailClient {
 
-        public void sendEmail(String email, String msg) {
-            sentEmail.put(email, msg);
+        @Override
+        public void sendMessage(String from, String[] recipients, String subject, String message) {
+            sentEmail.put("from", from);
+            sentEmail.put("subject", subject);
+            sentEmail.put("message", message);
+            sentEmail.put("recipients", recipients);
         }
     }
 

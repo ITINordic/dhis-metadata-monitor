@@ -90,7 +90,7 @@ public class DhisMonitorAppTest {
         sentMail = new HashMap<>();
         dhisObjects = new HashMap<>();
         noFile = new HashSet<>();
-        
+
         final Path root = tmp.newFolder(".sadombo").toPath();
         Properties properties = loadConfigProp();
 
@@ -334,11 +334,13 @@ public class DhisMonitorAppTest {
     private EmailClient mockEmailClient() {
         return new EmailClient() {
             @Override
-            public void sendEmail(String email, String msg) {
-                if (!sentMail.containsKey(email)) {
-                    sentMail.put(email, new ArrayList<>());
+            public void sendMessage(String from, String[] recipients, String subject, String message) {
+                for (String email : recipients) {
+                    if (!sentMail.containsKey(email)) {
+                        sentMail.put(email, new ArrayList<>());
+                    }
+                    sentMail.get(email).add(message);
                 }
-                sentMail.get(email).add(msg);
             }
         };
     }

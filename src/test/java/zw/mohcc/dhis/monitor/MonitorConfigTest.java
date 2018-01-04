@@ -25,6 +25,7 @@ import zw.mohcc.dhis.JUnitSoftAssertions;
  * @author cliffordc
  */
 public class MonitorConfigTest {
+
     @Rule
     public TemporaryFolder tmp = new TemporaryFolder();
 
@@ -137,8 +138,16 @@ public class MonitorConfigTest {
                 .endArray()
                 .endObject()
                 .endArray()
+                .key("mail")
+                .object()
+                .key("smtp")
+                .object()
+                .key("auth")
+                .value("true")
+                .endObject()
+                .endObject()
                 .endObject();
-        
+
         String json = stringWriter.toString();
 
         DataSetGroupConfig app1 = DataSetGroupConfig.builder()
@@ -166,6 +175,9 @@ public class MonitorConfigTest {
                 .hasFieldOrPropertyWithValue("appHome", root)
                 .hasOnlyDataSetGroups(app1, app2);
 
+        softly.assertThat(config.getMailSettings())
+                .containsKey("mail.smtp.auth")
+                .containsValue("true");
 
     }
 
@@ -191,6 +203,7 @@ public class MonitorConfigTest {
         properties.setProperty("dataset.app1.list", list1);
         properties.setProperty("dataset.app2.email", email2);
         properties.setProperty("dataset.app2.list", list2);
+        properties.setProperty("mail.smtp.auth", "true");
 
         DataSetGroupConfig app1 = DataSetGroupConfig.builder()
                 .name("app1")
@@ -216,6 +229,10 @@ public class MonitorConfigTest {
                 // FIXME: Work around assertj gen treating appHome as if it is a collection 
                 .hasFieldOrPropertyWithValue("appHome", root)
                 .hasOnlyDataSetGroups(app1, app2);
+        
+        softly.assertThat(config.getMailSettings())
+                .containsKey("mail.smtp.auth")
+                .containsValue("true");
     }
 
 }

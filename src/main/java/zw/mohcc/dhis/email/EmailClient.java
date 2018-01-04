@@ -10,5 +10,8 @@ package zw.mohcc.dhis.email;
  * @author cliffordc
  */
 public interface EmailClient {
-    public void sendEmail(String email, String msg);
+    public void sendMessage(
+            String from, String recipients[],
+            String subject, String message
+    );
 }

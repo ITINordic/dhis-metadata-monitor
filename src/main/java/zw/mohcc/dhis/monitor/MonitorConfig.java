@@ -5,6 +5,8 @@
  */
 package zw.mohcc.dhis.monitor;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.jayway.jsonpath.Configuration;
 import com.jayway.jsonpath.spi.json.JacksonJsonProvider;
@@ -15,6 +17,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
@@ -33,8 +36,9 @@ import zw.mohcc.dhis.email.EmailClient;
  *
  * @author cliffordc
  */
-@Builder
+@Builder(toBuilder = true)
 @Value
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class MonitorConfig {
 
     private String apiRootUrl;
@@ -43,12 +47,20 @@ public class MonitorConfig {
     private Path appHome;
     private HttpClientFactory clientFactory;
     private EmailClient emailClient;
-    
+
+    @Singular
+    private Map<String, String> mailSettings;
+
     @Builder.Default
     private Configuration jsonPathsConfig = Configuration.defaultConfiguration();
 
     @Singular
     private Set<DataSetGroupConfig> dataSetGroups;
+    
+    public String getDefaultFromEmailAccount(){
+        final String email = mailSettings.get("mail.default.email");
+        return email == null ? "info@example.org" : email;
+    }
 
     public static class MonitorConfigBuilder {
 
@@ -62,6 +74,11 @@ public class MonitorConfig {
                     final String name = field.getName();
                     updateFields(name, PropertyUtils.getProperty(config, name));
                 }
+
+                JsonNode jn = mapper.readTree(json);
+                JsonNode mail = jn.get("mail");
+                processMailSettings(mail, "mail");
+
             } catch (IllegalAccessException
                     | InvocationTargetException
                     | NoSuchMethodException
@@ -69,7 +86,21 @@ public class MonitorConfig {
                     | IOException ex) {
                 Logger.getLogger(MonitorConfig.class.getName()).log(Level.SEVERE, null, ex);
             }
+
             return this;
+        }
+
+        private void processMailSettings(JsonNode mail, String prefix) {
+            for (Iterator<Map.Entry<String, JsonNode>> iterator = mail.fields(); iterator.hasNext();) {
+                Map.Entry<String, JsonNode> field = iterator.next();
+                final String newPrefix = String.format("%s.%s", prefix, field.getKey());
+                if (field.getValue().isObject()) {
+                    processMailSettings(field.getValue(), newPrefix);
+                } else {
+                    mailSetting(newPrefix, field.getValue().asText());
+                }
+
+            }
         }
 
         private boolean updateStringFields(final String key, final Object value) {
@@ -89,12 +120,26 @@ public class MonitorConfig {
         }
 
         private void updateFields(final String key, final Object value) throws IllegalAccessException, NoSuchFieldException {
-            Field builderField = MonitorConfigBuilder.class.getDeclaredField(key);
             // FIXME: work around different types used between MonitorConfig and MonitorConfigBuilder
-            if (value instanceof Set) {
+            if(value == null){
+                return;
+            } else if (value instanceof Map) {
+                Map<Object, Object> map = (Map<Object, Object>) value;
+                final ArrayList keyArrayList = new ArrayList();
+                final ArrayList valueArrayList = new ArrayList();
+                for (Map.Entry<Object, Object> en : map.entrySet()) {
+                    keyArrayList.add(en.getKey());
+                    valueArrayList.add(en.getValue());
+                }
+                Field builderFieldKey = MonitorConfigBuilder.class.getDeclaredField(key + "$key");
+                Field builderFieldValue = MonitorConfigBuilder.class.getDeclaredField(key + "$value");
+                builderFieldKey.set(this, keyArrayList);
+                builderFieldValue.set(this, valueArrayList);
+            } else if (value instanceof Set) {
+                Field builderField = MonitorConfigBuilder.class.getDeclaredField(key);
                 builderField.set(this, new ArrayList((Set) value));
-
             } else {
+                Field builderField = MonitorConfigBuilder.class.getDeclaredField(key);
                 builderField.set(this, value);
             }
         }
@@ -113,11 +158,13 @@ public class MonitorConfig {
             Map<String, DataSetGroupConfig.DataSetGroupConfigBuilder<DataSetGroupConfig>> dataSetMap;
             dataSetMap = new HashMap<>();
             for (Map.Entry<Object, Object> en : properties.entrySet()) {
-
                 final String key = (String) en.getKey();
                 final String value = (String) en.getValue();
+                if (key.startsWith("mail.")) {
+                    mailSetting(key, value);
+                    continue;
+                }
                 Matcher match = isDataSet.matcher(key);
-
                 if (match.matches()) {
                     final String name = match.group("name");
                     final String prop = match.group("prop");

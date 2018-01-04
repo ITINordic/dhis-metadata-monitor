@@ -55,6 +55,9 @@ dependencies {
     apt 'com.google.dagger:dagger-compiler:2.14.1'
     
     compile 'com.jayway.jsonpath:json-path:2.4.0'
+    
+    // https://mvnrepository.com/artifact/javax.mail/mail
+    compile 'javax.mail:mail:1.4.1'
         
     compileOnly 'org.projectlombok:lombok:1.16.18'
     apt "org.projectlombok:lombok:1.16.18"

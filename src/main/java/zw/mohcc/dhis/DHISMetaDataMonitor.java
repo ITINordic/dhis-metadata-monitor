@@ -29,6 +29,7 @@ public class DHISMetaDataMonitor {
                         .addPropertiesConfig(openConfig(appHome, "secret.properties"))
                         .addPropertiesConfig(openConfig(appHome, "config.properties"))
                         .addJsonPathJacksonConfiguration();
+        
         DhisMonitorApp dma = new DhisMonitorApp(config.build());
         dma.start();
     }
