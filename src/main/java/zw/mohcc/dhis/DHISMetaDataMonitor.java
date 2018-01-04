@@ -26,6 +26,10 @@ public class DHISMetaDataMonitor {
      * @param args the command line arguments
      */
     public static void main(String[] args) {
+        if(args[0].equals("help")) {
+            System.out.println("Please read the README.html file in the project root directory");
+            return;
+        }
         Configuration.setDefaults(new Configuration.Defaults() {
 
             private final JsonProvider jsonProvider = new JacksonJsonNodeJsonProvider();
@@ -51,7 +55,8 @@ public class DHISMetaDataMonitor {
         MonitorConfig.MonitorConfigBuilder config
                 = MonitorConfig.builder()
                         .appHome(appHome)
-                        .addPropertiesConfig(openConfig(appHome, "secret.properties"));
+                        .addPropertiesConfig(openConfig(appHome, "secret.properties"))
+                        .addPropertiesConfig(openConfig(appHome, "config.properties"));
         DhisMonitorApp dma = new DhisMonitorApp(config.build());
         dma.start();
     }

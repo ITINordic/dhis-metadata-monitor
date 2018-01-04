@@ -43,9 +43,8 @@ public class DHISMetaDataMonitorTest {
     @Test
     public void testMain() {
         System.out.println("main");
-        String[] args = null;
-        // FIXME: mock calls used by main
-        // DHISMetaDataMonitor.main(args);
+        String[] args = new String[]{"help"};
+        DHISMetaDataMonitor.main(args);
     }
     
 }

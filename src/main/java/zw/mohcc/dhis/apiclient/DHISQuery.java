@@ -22,7 +22,6 @@ public class DHISQuery {
     private String url;
     private String type;
     private String id;
-    private String accept;
     private String username;
     private String password;
     @Singular

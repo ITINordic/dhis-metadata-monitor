@@ -31,6 +31,8 @@ import static spark.Spark.get;
 import zw.mohcc.dhis.apiclient.DHISQuery;
 import zw.mohcc.dhis.apiclient.HttpClient;
 import zw.mohcc.dhis.apiclient.HttpClientFactory;
+import zw.mohcc.dhis.email.EmailClient;
+import zw.mohcc.dhis.email.FileEmailClient;
 import zw.mohcc.dhis.gitclient.GitClient;
 import zw.mohcc.dhis.gitclient.GitProcessingFailedException;
 
@@ -43,6 +45,7 @@ public class DhisMonitorApp {
     private final DHISQuery defaultQuery;
     private final MonitorConfig config;
     private final Configuration jsonPathConf;
+    private final EmailClient emailClient;
 
     public DhisMonitorApp(MonitorConfig config) {
         final DHISQuery.DHISQueryBuilder builder = dhisQueryBuilder()
@@ -57,6 +60,12 @@ public class DhisMonitorApp {
         defaultQuery = builder
                 .build();
 
+        if(config.getEmailClient() == null){
+            emailClient = new FileEmailClient(config.getAppHome().resolve("email"));
+        } else {
+            emailClient = config.getEmailClient();
+        }
+        
         this.config = config;
     }
 
@@ -78,6 +87,9 @@ public class DhisMonitorApp {
 
     Set<Notify> monitor() {
         try {
+            // Nothing to process
+            if(config.getDataSetGroups().isEmpty()) return Collections.emptySet();
+            
             final Path repo = config.getAppHome().resolve("repo");
             Map<String, Notify> notifyGroupMap = new HashMap<>();
             Map<String, Set<String>> notifyMap = new HashMap<>();
@@ -154,7 +166,7 @@ public class DhisMonitorApp {
             // send emails
             for (Notify value : notifySet) {
                 final String email = value.getGroup().getEmail();
-                config.getEmailClient().sendEmail(email, value.getMessages().stream().collect(Collectors.joining("\n\n\n")));
+                emailClient.sendEmail(email, value.getMessages().stream().collect(Collectors.joining("\n\n\n")));
             }
 
             return notifySet;

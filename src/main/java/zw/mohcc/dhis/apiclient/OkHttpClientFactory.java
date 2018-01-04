@@ -11,7 +11,7 @@ import java.util.Base64;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import lombok.Builder;
+import lombok.Value;
 import okhttp3.Request;
 import okhttp3.Response;
 import okhttp3.ResponseBody;
@@ -43,17 +43,16 @@ public class OkHttpClientFactory implements HttpClientFactory {
         }
         final String basicAuth = getBasicAuthorization(username, password);
         builder.addHeader("Authorization", basicAuth);
+        builder.url(toURLString);
         Request request = builder.build();
-        return new OkHttpClient(client, request);
+        OkHttpClient okHttpClient = new OkHttpClient(request);
+        return okHttpClient;
     }
 
-    public static class OkHttpClient implements HttpClient {
+    public class OkHttpClient implements HttpClient {
 
-        private final okhttp3.OkHttpClient client;
-
-        private OkHttpClient(okhttp3.OkHttpClient client, Request request) {
+        private OkHttpClient(Request request) {
             this.request = request;
-            this.client = client;
         }
 
         private final Request request;

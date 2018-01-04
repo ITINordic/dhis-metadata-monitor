@@ -12,28 +12,33 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import static org.junit.Assert.*;
+import org.junit.Rule;
+import zw.mohcc.dhis.JUnitSoftAssertions;
 
 /**
  *
  * @author cliffordc
  */
 public class OkHttpClientFactoryTest {
-    
+
+    @Rule
+    public final JUnitSoftAssertions softly = new JUnitSoftAssertions();
+
     public OkHttpClientFactoryTest() {
     }
-    
+
     @BeforeClass
     public static void setUpClass() {
     }
-    
+
     @AfterClass
     public static void tearDownClass() {
     }
-    
+
     @Before
     public void setUp() {
     }
-    
+
     @After
     public void tearDown() {
     }
@@ -49,9 +54,8 @@ public class OkHttpClientFactoryTest {
         Map<String, String> headers = null;
         String toURLString = "http://www.example.com";
         OkHttpClientFactory instance = new OkHttpClientFactory();
-        HttpClient expResult = null;
-        // FIXME: Mock okhttp3 calls
-        // HttpClient result = instance.getInstance(username, password, headers, toURLString);
+        HttpClient result = instance.getInstance(username, password, headers, toURLString);
+        softly.assertThat(result).isInstanceOf(OkHttpClientFactory.OkHttpClient.class);
     }
 
     /**
@@ -66,5 +70,5 @@ public class OkHttpClientFactoryTest {
         String result = OkHttpClientFactory.getBasicAuthorization(username, password);
         assertEquals(expResult, result);
     }
-    
+
 }
