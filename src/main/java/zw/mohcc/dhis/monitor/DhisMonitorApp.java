@@ -5,8 +5,6 @@
  */
 package zw.mohcc.dhis.monitor;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.jayway.jsonpath.Configuration;
 import com.jayway.jsonpath.DocumentContext;
 import com.jayway.jsonpath.JsonPath;
@@ -14,14 +12,16 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.nio.file.Path;
-import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Scanner;
 import java.util.Set;
+import java.util.function.Consumer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
@@ -71,22 +71,21 @@ public class DhisMonitorApp {
 
     public void start() {
         get("/monitor", (Request req, Response res) -> {
-            res.body(monitor().values().stream().collect(Collectors.joining("\n")));
+            res.body(monitor().stream().map(notify -> notify.toString()).collect(Collectors.joining("\n")));
             return res;
         });
 
     }
 
-    Map<String, String> monitor() {
+    Collection<Notify> monitor() {
         try {
-            StringBuilder sb = new StringBuilder();
             final Path repo = config.getAppHome().resolve("repo");
-            Map<String, DataSetGroupConfig> notifyGroupMap = new HashMap<>();
+            Map<String, Notify> notifyGroupMap = new HashMap<>();
             Map<String, Set<String>> notifyMap = new HashMap<>();
             Set<String> processed = new HashSet<>();
             for (DataSetGroupConfig dataSetGroupConfig : config.getDataSetGroups()) {
                 final String dataSetGroupId = dhisUniqueObjectId(dataSetGroupConfig.getName(), "emailGroup");
-                notifyGroupMap.put(dataSetGroupId, dataSetGroupConfig);
+                notifyGroupMap.put(dataSetGroupId, new Notify(dataSetGroupConfig));
                 for (String code : dataSetGroupConfig.getDataSets()) {
                     populateDataSets(code, dataSetGroupId, notifyMap, processed, repo);
                 }
@@ -95,7 +94,7 @@ public class DhisMonitorApp {
             String diffString = gitClient.process(repo);
             Scanner scanner = new Scanner(diffString);
 
-            Map<String,String> diffs = new HashMap<>();
+            Map<String, String> diffs = new HashMap<>();
             StringWriter sw = new StringWriter();
             PrintWriter pw = new PrintWriter(sw);
             while (scanner.hasNextLine()) {
@@ -109,11 +108,52 @@ public class DhisMonitorApp {
                 }
             }
             scanner.close();
-            return diffs;
+            // initialise notification
+            Map<String, Set<String>> toNotifyWithMsgs = new HashMap<>();
+            for (Map.Entry<String, String> diff : diffs.entrySet()) {
+                final String filename = diff.getKey();
+                final String key = filename.substring(0, filename.length() - 5);
+                String diffMsg = diff.getValue();
+                if (!toNotifyWithMsgs.containsKey(key)) {
+                    toNotifyWithMsgs.put(key, new HashSet<>());
+                }
+                Set<String> msgs = toNotifyWithMsgs.get(key);
+                msgs.add(diffMsg);
+            }
+            // push notification
+            while (true) {
+                Optional<String> item
+                        = toNotifyWithMsgs.keySet().stream().findFirst();
+                if (item.isPresent()) {
+                    String mkey = item.get();
+                    Set<String> msgs = toNotifyWithMsgs.remove(mkey);
+                    if (notifyMap.containsKey(mkey)) {
+                        // add msgs to parent
+                        Set<String> parents = notifyMap.get(mkey);
+                        for (String key : parents) {
+                            if (!toNotifyWithMsgs.containsKey(key)) {
+                                toNotifyWithMsgs.put(key, msgs);
+                            } else {
+                                Set<String> existingMsgs = toNotifyWithMsgs.get(key);
+                                existingMsgs.addAll(msgs);
+                            }
+                        }
+                    } else {
+                        Notify notify = notifyGroupMap.get(mkey);
+                        notify.getMessages().addAll(msgs);    
+                    }
+
+                } else {
+                    break;
+                }
+            }
+            System.out.println(notifyGroupMap);
+
+            return notifyGroupMap.values();
         } catch (GitProcessingFailedException ex) {
             Logger.getLogger(DhisMonitorApp.class.getName()).log(Level.SEVERE, null, ex);
         }
-        return Collections.emptyMap();
+        return Collections.emptyList();
     }
 
     // QUERY="fields=name,id,code,periodType,categoryCombo\[categories\[name,code,\[categoryOptions\]\]\],\

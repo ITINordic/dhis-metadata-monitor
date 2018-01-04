@@ -15,6 +15,7 @@ import java.io.Writer;
 import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.Base64;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -185,7 +186,7 @@ public class DhisMonitorAppTest {
         defineObjects();
 
         DhisMonitorApp instance = new DhisMonitorApp(config);
-        Map<String, String> monitor = instance.monitor();
+        Collection<Notify> monitor = instance.monitor();
         final Path repo = root.resolve("repo");
         softly.assertThat(repo.resolve(".git")).exists();
         for (String key : dhisObjects.keySet()) {
@@ -194,10 +195,10 @@ public class DhisMonitorAppTest {
             }
             softly.assertThat(repo.resolve(key + ".json")).exists();
         }
+        softly.assertThat(monitor).flatExtracting(item -> item.getMessages()).isEmpty();
         for (File file : FileUtils.listFilesAndDirs(root.toFile(), TrueFileFilter.INSTANCE, TrueFileFilter.INSTANCE)) {
             System.out.println(file.getPath());
         }
-        System.out.println(monitor.values().stream().collect(Collectors.joining("\n\n")));
     }
 
     @Test
@@ -218,12 +219,12 @@ public class DhisMonitorAppTest {
         defineObjects();
 
         DhisMonitorApp instance = new DhisMonitorApp(config);
-        Map<String, String> monitor1 = instance.monitor();
-        
+        Collection<Notify> monitor1 = instance.monitor();
+
         // second commit
         Map<String, Object> cat01 = dhisObjects.get(postfixString(CATEGORIES, "cat01"));
         cat01.put(NAME, "changed name");
-        Map<String, String> monitor2 = instance.monitor();
+        Collection<Notify> monitor2 = instance.monitor();
 
         final Path repo = root.resolve("repo");
         softly.assertThat(repo.resolve(".git")).exists();
@@ -236,10 +237,9 @@ public class DhisMonitorAppTest {
         for (File file : FileUtils.listFilesAndDirs(root.toFile(), TrueFileFilter.INSTANCE, TrueFileFilter.INSTANCE)) {
             System.out.println(file.getPath());
         }
-        System.out.println(monitor1.values().stream().collect(Collectors.joining("\n\n")));
-        System.out.println(monitor1.keySet().stream().collect(Collectors.joining("\n\n")));
-        System.out.println(monitor2.values().stream().collect(Collectors.joining("\n\n")));
-        System.out.println(monitor2.keySet().stream().collect(Collectors.joining("\n\n")));
+        softly.assertThat(monitor1).flatExtracting(item -> item.getMessages()).isEmpty();
+        softly.assertThat(monitor2).flatExtracting(item -> item.getMessages()).isNotEmpty();
+
     }
 
     private Properties loadConfigProp() {
