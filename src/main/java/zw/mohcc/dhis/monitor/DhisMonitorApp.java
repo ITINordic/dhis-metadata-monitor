@@ -21,7 +21,6 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Scanner;
 import java.util.Set;
-import java.util.function.Consumer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
@@ -77,7 +76,7 @@ public class DhisMonitorApp {
 
     }
 
-    Collection<Notify> monitor() {
+    Set<Notify> monitor() {
         try {
             final Path repo = config.getAppHome().resolve("repo");
             Map<String, Notify> notifyGroupMap = new HashMap<>();
@@ -147,13 +146,22 @@ public class DhisMonitorApp {
                     break;
                 }
             }
-            System.out.println(notifyGroupMap);
+            
+            // remove groups without messages
+            final Set<Notify> notifySet 
+                    = notifyGroupMap.values().stream().filter(n -> !n.getMessages().isEmpty()).collect(Collectors.toSet());
+            
+            // send emails
+            for (Notify value : notifySet) {
+                final String email = value.getGroup().getEmail();
+                config.getEmailClient().sendEmail(email, value.getMessages().stream().collect(Collectors.joining("\n\n\n")));
+            }
 
-            return notifyGroupMap.values();
+            return notifySet;
         } catch (GitProcessingFailedException ex) {
             Logger.getLogger(DhisMonitorApp.class.getName()).log(Level.SEVERE, null, ex);
         }
-        return Collections.emptyList();
+        return Collections.emptySet();
     }
 
     // QUERY="fields=name,id,code,periodType,categoryCombo\[categories\[name,code,\[categoryOptions\]\]\],\

@@ -3,7 +3,7 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package zw.mohcc;
+package zw.mohcc.dhis.email;
 
 import org.junit.After;
 import org.junit.AfterClass;
@@ -17,12 +17,8 @@ import org.junit.runners.Suite;
  * @author cliffordc
  */
 @RunWith(Suite.class)
-@Suite.SuiteClasses({zw.mohcc.dhis.DhisSuite.class, 
-    zw.mohcc.dhis.gitclient.GitclientSuite.class, 
-    zw.mohcc.dhis.monitor.MonitorSuite.class,
-    zw.mohcc.dhis.email.EmailSuite.class
-})
-public class MohccSuite {
+@Suite.SuiteClasses({zw.mohcc.dhis.email.EmailClientTest.class})
+public class EmailSuite {
 
     @BeforeClass
     public static void setUpClass() throws Exception {

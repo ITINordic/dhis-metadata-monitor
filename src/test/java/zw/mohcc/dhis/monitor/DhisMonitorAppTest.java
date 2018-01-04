@@ -13,6 +13,7 @@ import java.io.IOException;
 import java.io.StringWriter;
 import java.io.Writer;
 import java.nio.file.Path;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Base64;
 import java.util.Collection;
@@ -29,6 +30,8 @@ import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.filefilter.TrueFileFilter;
+import org.assertj.core.api.Condition;
+import org.assertj.core.description.Description;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
@@ -39,6 +42,7 @@ import org.junit.rules.TemporaryFolder;
 import zw.mohcc.dhis.JUnitSoftAssertions;
 import zw.mohcc.dhis.apiclient.HttpClient;
 import zw.mohcc.dhis.apiclient.HttpClientFactory;
+import zw.mohcc.dhis.email.EmailClient;
 import static zw.mohcc.dhis.monitor.DhisMonitorApp.dhisUniqueObjectId;
 
 /**
@@ -64,8 +68,10 @@ public class DhisMonitorAppTest {
 
     // "http://www.example.org/DataSets?filter=code:eq:d1&fields=organisationUnits[name,id,code]"
     private static final Pattern PATTERN = Pattern.compile("http://www.example.org/(?<type>[^/#?:&]+)\\?filter=code:eq:(?<code>[^/#?:&]+).*");
-    private static Map<String, Map<String, Object>> dhisObjects;
-    private static Set<String> noFile;
+
+    private Map<String, Map<String, Object>> dhisObjects;
+    private Set<String> noFile;
+    Map<String, List<String>> sentMail;
 
     public DhisMonitorAppTest() {
     }
@@ -80,6 +86,9 @@ public class DhisMonitorAppTest {
 
     @Before
     public void setUp() {
+        sentMail = new HashMap<>();
+        dhisObjects = new HashMap<>();
+        noFile = new HashSet<>();
     }
 
     @After
@@ -103,7 +112,7 @@ public class DhisMonitorAppTest {
 //            "organisationUnits": [
 //                {
 //                  
-    private static Map<String, Object> createDataSet(String code,
+    private Map<String, Object> createDataSet(String code,
             String periodType,
             String categoryCombo,
             String[] organisationUnits) {
@@ -120,7 +129,7 @@ public class DhisMonitorAppTest {
         return hashMap;
     }
 
-    private static Map<String, Object> createCategoryCombo(String code, String[] categories) {
+    private Map<String, Object> createCategoryCombo(String code, String[] categories) {
 
         HashMap<String, Object> hashMap = new HashMap<>();
         hashMap.put(CATEGORIES, generateListFromString(categories));
@@ -128,7 +137,7 @@ public class DhisMonitorAppTest {
         return hashMap;
     }
 
-    private static List<Map<String, Object>> generateListFromString(String[] objectCodes) {
+    private List<Map<String, Object>> generateListFromString(String[] objectCodes) {
         List<Map<String, Object>> objectList
                 = Arrays.stream(objectCodes).map(key -> dhisObjects.get(key)).collect(Collectors.toList());
         return objectList;
@@ -145,7 +154,7 @@ public class DhisMonitorAppTest {
         return dhisUniqueObjectId(code, postfix);
     }
 
-    private static Map<String, Object> createCategories(String code) {
+    private Map<String, Object> createCategories(String code) {
 
         HashMap<String, Object> hashMap = new HashMap<>();
         hashMap.put(CODE, code);
@@ -155,7 +164,7 @@ public class DhisMonitorAppTest {
         return hashMap;
     }
 
-    private static Map<String, Object> createOrganisationUnits(String code) {
+    private Map<String, Object> createOrganisationUnits(String code) {
 
         HashMap<String, Object> hashMap = new HashMap<>();
         hashMap.put(CODE, code);
@@ -175,18 +184,20 @@ public class DhisMonitorAppTest {
         Properties properties = loadConfigProp();
 
         HttpClientFactory clientFactory = mockClientFactory();
+        EmailClient emailClient = mockEmailClient();
 
         final MonitorConfig config = MonitorConfig.builder()
                 .addPropertiesConfig(properties)
                 .appHome(root)
                 .clientFactory(clientFactory)
+                .emailClient(emailClient)
                 .build();
 
         // commit
         defineObjects();
 
         DhisMonitorApp instance = new DhisMonitorApp(config);
-        Collection<Notify> monitor = instance.monitor();
+        Set<Notify> monitor = instance.monitor();
         final Path repo = root.resolve("repo");
         softly.assertThat(repo.resolve(".git")).exists();
         for (String key : dhisObjects.keySet()) {
@@ -208,23 +219,25 @@ public class DhisMonitorAppTest {
         Properties properties = loadConfigProp();
 
         HttpClientFactory clientFactory = mockClientFactory();
+        EmailClient emailClient = mockEmailClient();
 
         final MonitorConfig config = MonitorConfig.builder()
                 .addPropertiesConfig(properties)
                 .appHome(root)
                 .clientFactory(clientFactory)
+                .emailClient(emailClient)
                 .build();
 
         // first commit 
         defineObjects();
 
         DhisMonitorApp instance = new DhisMonitorApp(config);
-        Collection<Notify> monitor1 = instance.monitor();
+        Set<Notify> monitor1 = instance.monitor();
 
         // second commit
         Map<String, Object> cat01 = dhisObjects.get(postfixString(CATEGORIES, "cat01"));
         cat01.put(NAME, "changed name");
-        Collection<Notify> monitor2 = instance.monitor();
+        Set<Notify> monitor2 = instance.monitor();
 
         final Path repo = root.resolve("repo");
         softly.assertThat(repo.resolve(".git")).exists();
@@ -239,6 +252,13 @@ public class DhisMonitorAppTest {
         }
         softly.assertThat(monitor1).flatExtracting(item -> item.getMessages()).isEmpty();
         softly.assertThat(monitor2).flatExtracting(item -> item.getMessages()).isNotEmpty();
+        final Condition<Map<String, List<String>>> onlyOneMessage = new Condition<Map<String, List<String>>>() {
+            @Override
+            public boolean matches(Map<String, List<String>> value) {
+                return value.values().stream().allMatch(l -> l.size() == 1); //To change body of generated methods, choose Tools | Templates.
+            }
+        };
+        softly.assertThat(sentMail).has(onlyOneMessage);
 
     }
 
@@ -261,10 +281,7 @@ public class DhisMonitorAppTest {
         return properties;
     }
 
-    private static void defineObjects() {
-        dhisObjects = new HashMap<>();
-        noFile = new HashSet<>();
-
+    private void defineObjects() {
         createCategories("cat01");
         createCategories("cat02");
         createCategoryCombo("com01", postfixStringArray(CATEGORIES, "cat01", "cat02"));
@@ -279,11 +296,11 @@ public class DhisMonitorAppTest {
         createDataSet("a2d4", "monthly", postfixString(CATEGORY_COMBO, "com01"), postfixStringArray(ORGANISATION_UNITS, "org01", "org02"));
     }
 
-    private static void addDhisObject(String code, Map<String, Object> object) {
+    private void addDhisObject(String code, Map<String, Object> object) {
         dhisObjects.put(code, object);
     }
 
-    private static HttpClientFactory mockClientFactory() {
+    private HttpClientFactory mockClientFactory() {
         return new HttpClientFactory() {
             @Override
             public HttpClient getInstance(String username, String password, Map<String, String> headers, String toURLString) {
@@ -311,6 +328,18 @@ public class DhisMonitorAppTest {
                     return toURLString;
 
                 };
+            }
+        };
+    }
+
+    private EmailClient mockEmailClient() {
+        return new EmailClient() {
+            @Override
+            public void sendEmail(String email, String msg) {
+                if (!sentMail.containsKey(email)) {
+                    sentMail.put(email, new ArrayList<>());
+                }
+                sentMail.get(email).add(msg);
             }
         };
     }

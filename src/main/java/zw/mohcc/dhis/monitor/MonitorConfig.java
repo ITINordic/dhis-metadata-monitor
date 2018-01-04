@@ -24,6 +24,7 @@ import lombok.Singular;
 import lombok.Value;
 import org.apache.commons.beanutils.PropertyUtils;
 import zw.mohcc.dhis.apiclient.HttpClientFactory;
+import zw.mohcc.dhis.email.EmailClient;
 
 /**
  *
@@ -38,6 +39,7 @@ public class MonitorConfig {
     private String password;
     private Path appHome;
     private HttpClientFactory clientFactory;
+    private EmailClient emailClient;
 
     @Singular
     private Set<DataSetGroupConfig> dataSetGroups;

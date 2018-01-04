@@ -120,10 +120,10 @@ public class GitClientTest {
         String process = gitClient.process(gitDir);
         
 // Sample result
-//        String diff = "diff --git a/data1.txt b/data1.txt\n"
+//        String diff = "diff --git old/data1.txt new/data1.txt\n"
 //                + "index 4fa2dfe..f306177 100644\n"
-//                + "--- a/data1.txt\n"
-//                + "+++ b/data1.txt\n"
+//                + "--- old/data1.txt\n"
+//                + "+++ new/data1.txt\n"
 //                + "@@ -1,5 +1,5 @@\n"
 //                + " hello world, this is a data1 file.\n"
 //                + "-first changing v1\n"
@@ -132,10 +132,10 @@ public class GitClientTest {
 //                + "-second changing v1\n"
 //                + "+second changing v2\n"
 //                + " no change\n"
-//                + "diff --git a/data2.txt b/data2.txt\n"
+//                + "diff --git old/data2.txt new/data2.txt\n"
 //                + "index 1c2daa3..410093d 100644\n"
-//                + "--- a/data2.txt\n"
-//                + "+++ b/data2.txt\n"
+//                + "--- old/data2.txt\n"
+//                + "+++ new/data2.txt\n"
 //                + "@@ -1,5 +1,5 @@\n"
 //                + " hello world, this is a data2 file.\n"
 //                + "-first changing v1\n"
@@ -145,10 +145,10 @@ public class GitClientTest {
 //                + "+second changing v2\n"
 //                + " no change\n";
        
-        softly.assertThat(process).contains("--- a/data1.txt");
-        softly.assertThat(process).contains("+++ b/data1.txt");
-        softly.assertThat(process).contains("--- a/data2.txt");
-        softly.assertThat(process).contains("+++ b/data2.txt");
+        softly.assertThat(process).contains("--- old/data1.txt");
+        softly.assertThat(process).contains("+++ new/data1.txt");
+        softly.assertThat(process).contains("--- old/data2.txt");
+        softly.assertThat(process).contains("+++ new/data2.txt");
 
         softly.assertThat(process).contains("-first changing d1v1");
         softly.assertThat(process).contains("+first changing d1v2");
