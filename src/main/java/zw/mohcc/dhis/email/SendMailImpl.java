@@ -112,7 +112,7 @@ public class SendMailImpl {
 
     public static void main(String[] args) throws MessagingException {
         SendMailImpl sendMailImpl = new SendMailImpl();
-        sendMailImpl.sendMessage("info@sadombo.itinordic.com", new String[]{"cchigoriwa@gmail.com"}, "Test", "Test Message");
+        sendMailImpl.sendMessage("info@sadombo.itinordic.com", new String[]{"cchigoriwa@gmail.com", "cliffordhc@gmail.com", "matavirer@gmail.com", "bobjolliffe@gmail.com"}, "Test message from Sadombo", "<b>Test Message from Sadombo<b>");
 
     }
 
