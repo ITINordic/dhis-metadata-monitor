@@ -1,20 +1,11 @@
 package zw.mohcc.dhis;
 
-import com.jayway.jsonpath.Configuration;
-import com.jayway.jsonpath.Option;
-import com.jayway.jsonpath.spi.json.JacksonJsonNodeJsonProvider;
-import com.jayway.jsonpath.spi.json.JacksonJsonProvider;
-import com.jayway.jsonpath.spi.json.JsonProvider;
-import com.jayway.jsonpath.spi.mapper.JacksonMappingProvider;
-import com.jayway.jsonpath.spi.mapper.MappingProvider;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.EnumSet;
 import java.util.Properties;
-import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import zw.mohcc.dhis.monitor.DhisMonitorApp;
@@ -26,37 +17,18 @@ public class DHISMetaDataMonitor {
      * @param args the command line arguments
      */
     public static void main(String[] args) {
-        if(args[0].equals("help")) {
+        if (args.length >= 1 && args[0].equals("help")) {
             System.out.println("Please read the README.html file in the project root directory");
             return;
         }
-        Configuration.setDefaults(new Configuration.Defaults() {
 
-            private final JsonProvider jsonProvider = new JacksonJsonNodeJsonProvider();
-            private final MappingProvider mappingProvider = new JacksonMappingProvider();
-
-            @Override
-            public JsonProvider jsonProvider() {
-                return jsonProvider;
-            }
-
-            @Override
-            public MappingProvider mappingProvider() {
-                return mappingProvider;
-            }
-
-            @Override
-            public Set<Option> options() {
-                return EnumSet.noneOf(Option.class);
-            }
-        });
-        
         Path appHome = Paths.get(System.getProperty("user.home")).resolve(".sadombo");
         MonitorConfig.MonitorConfigBuilder config
                 = MonitorConfig.builder()
                         .appHome(appHome)
                         .addPropertiesConfig(openConfig(appHome, "secret.properties"))
-                        .addPropertiesConfig(openConfig(appHome, "config.properties"));
+                        .addPropertiesConfig(openConfig(appHome, "config.properties"))
+                        .addJsonPathJacksonConfiguration();
         DhisMonitorApp dma = new DhisMonitorApp(config.build());
         dma.start();
     }

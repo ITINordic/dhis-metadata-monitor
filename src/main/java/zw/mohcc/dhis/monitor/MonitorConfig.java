@@ -6,6 +6,9 @@
 package zw.mohcc.dhis.monitor;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.jayway.jsonpath.Configuration;
+import com.jayway.jsonpath.spi.json.JacksonJsonProvider;
+import com.jayway.jsonpath.spi.mapper.JacksonMappingProvider;
 import java.io.IOException;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
@@ -40,6 +43,9 @@ public class MonitorConfig {
     private Path appHome;
     private HttpClientFactory clientFactory;
     private EmailClient emailClient;
+    
+    @Builder.Default
+    private Configuration jsonPathsConfig = Configuration.defaultConfiguration();
 
     @Singular
     private Set<DataSetGroupConfig> dataSetGroups;
@@ -86,11 +92,20 @@ public class MonitorConfig {
             Field builderField = MonitorConfigBuilder.class.getDeclaredField(key);
             // FIXME: work around different types used between MonitorConfig and MonitorConfigBuilder
             if (value instanceof Set) {
-                builderField.set(this, new ArrayList((Set)value));
+                builderField.set(this, new ArrayList((Set) value));
 
             } else {
                 builderField.set(this, value);
             }
+        }
+
+        public MonitorConfigBuilder addJsonPathJacksonConfiguration() {
+
+            jsonPathsConfig(Configuration.builder()
+                    .jsonProvider(new JacksonJsonProvider())
+                    .mappingProvider(new JacksonMappingProvider())
+                    .build());
+            return this;
         }
 
         public MonitorConfigBuilder addPropertiesConfig(Properties properties) {

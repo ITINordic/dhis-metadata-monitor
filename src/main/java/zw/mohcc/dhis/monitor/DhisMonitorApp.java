@@ -56,9 +56,10 @@ public class DhisMonitorApp {
         if (clientFactory != null) {
             builder.clientFactory(clientFactory);
         }
-        jsonPathConf = Configuration.defaultConfiguration();
         defaultQuery = builder
                 .build();
+
+        jsonPathConf = config.getJsonPathsConfig();
 
         if(config.getEmailClient() == null){
             emailClient = new FileEmailClient(config.getAppHome().resolve("email"));
@@ -192,6 +193,12 @@ public class DhisMonitorApp {
                     .beginField().name("id").end()
                     .beginField().name("code").end()
                     .end()
+                    .beginField()
+                    .name("organisationUnits")
+                    .beginField().name("name").end()
+                    .beginField().name("id").end()
+                    .beginField().name("code").end()
+                    .end()
                     .beginFilter()
                     .lhs("code")
                     .op("eq")
@@ -210,8 +217,8 @@ public class DhisMonitorApp {
                 DocumentContext ctx = JsonPath.using(jsonPathConf).parse(result);
                 // organisationUnits
                 List<String> orgUnits = ctx.read("$.dataSets[*].organisationUnits[*].code");
-                for (String nodecode : orgUnits) {
-                    processOrgUnits(nodecode, depObjectId, notifyMap, processed, repo);
+                for (Object nodecode : orgUnits) {
+                    processOrgUnits((String) nodecode, depObjectId, notifyMap, processed, repo);
                 }
                 // dataElements
                 List<String> dataElements = ctx.read("$.dataSets[*].dataElements");

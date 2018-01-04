@@ -66,12 +66,13 @@ public class DhisMonitorAppTest {
     private static final String ORGANISATION_UNITS = "organisationUnits";
     private static final String DATA_SET = "dataSets";
 
-    // "http://www.example.org/DataSets?filter=code:eq:d1&fields=organisationUnits[name,id,code]"
-    private static final Pattern PATTERN = Pattern.compile("http://www.example.org/(?<type>[^/#?:&]+)\\?filter=code:eq:(?<code>[^/#?:&]+).*");
+    // "http://www.example.org/DataSets?paging=false&filter=code:eq:d1&fields=organisationUnits[name,id,code]"
+    private static final Pattern PATTERN = Pattern.compile("http://www.example.org/(?<type>[^/#?:&]+)\\?paging=false&filter=code:eq:(?<code>[^/#?:&]+).*");
 
     private Map<String, Map<String, Object>> dhisObjects;
     private Set<String> noFile;
     Map<String, List<String>> sentMail;
+    private MonitorConfig.MonitorConfigBuilder configBulder;
 
     public DhisMonitorAppTest() {
     }
@@ -89,6 +90,18 @@ public class DhisMonitorAppTest {
         sentMail = new HashMap<>();
         dhisObjects = new HashMap<>();
         noFile = new HashSet<>();
+        
+        final Path root = tmp.newFolder(".sadombo").toPath();
+        Properties properties = loadConfigProp();
+
+        HttpClientFactory clientFactory = mockClientFactory();
+        EmailClient emailClient = mockEmailClient();
+        configBulder = MonitorConfig.builder()
+                .addPropertiesConfig(properties)
+                .appHome(root)
+                .clientFactory(clientFactory)
+                .emailClient(emailClient)
+                .addJsonPathJacksonConfiguration();
     }
 
     @After
@@ -180,17 +193,8 @@ public class DhisMonitorAppTest {
     @Test
     public void testMonitor() {
         System.out.println("start");
-        final Path root = tmp.newFolder(".sadombo").toPath();
-        Properties properties = loadConfigProp();
 
-        HttpClientFactory clientFactory = mockClientFactory();
-        EmailClient emailClient = mockEmailClient();
-
-        final MonitorConfig config = MonitorConfig.builder()
-                .addPropertiesConfig(properties)
-                .appHome(root)
-                .clientFactory(clientFactory)
-                .emailClient(emailClient)
+        final MonitorConfig config = configBulder
                 .build();
 
         // commit
@@ -198,7 +202,7 @@ public class DhisMonitorAppTest {
 
         DhisMonitorApp instance = new DhisMonitorApp(config);
         Set<Notify> monitor = instance.monitor();
-        final Path repo = root.resolve("repo");
+        final Path repo = config.getAppHome().resolve("repo");
         softly.assertThat(repo.resolve(".git")).exists();
         for (String key : dhisObjects.keySet()) {
             if (noFile.contains(key)) {
@@ -207,7 +211,7 @@ public class DhisMonitorAppTest {
             softly.assertThat(repo.resolve(key + ".json")).exists();
         }
         softly.assertThat(monitor).flatExtracting(item -> item.getMessages()).isEmpty();
-        for (File file : FileUtils.listFilesAndDirs(root.toFile(), TrueFileFilter.INSTANCE, TrueFileFilter.INSTANCE)) {
+        for (File file : FileUtils.listFilesAndDirs(config.getAppHome().toFile(), TrueFileFilter.INSTANCE, TrueFileFilter.INSTANCE)) {
             System.out.println(file.getPath());
         }
     }
@@ -221,12 +225,7 @@ public class DhisMonitorAppTest {
         HttpClientFactory clientFactory = mockClientFactory();
         EmailClient emailClient = mockEmailClient();
 
-        final MonitorConfig config = MonitorConfig.builder()
-                .addPropertiesConfig(properties)
-                .appHome(root)
-                .clientFactory(clientFactory)
-                .emailClient(emailClient)
-                .build();
+        final MonitorConfig config = configBulder.build();
 
         // first commit 
         defineObjects();

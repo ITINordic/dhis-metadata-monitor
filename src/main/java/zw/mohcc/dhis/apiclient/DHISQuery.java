@@ -24,14 +24,16 @@ public class DHISQuery {
     private String id;
     private String username;
     private String password;
+    @Builder.Default
+    private boolean paging = false;
     @Singular
     private List<Field> fields;
     @Singular
     private List<Filter> filters;
-    
+
     @Builder.Default
     private HttpClientFactory clientFactory = new OkHttpClientFactory();
-    
+
     @Singular
     private Map<String, String> headers;
 
@@ -59,7 +61,11 @@ public class DHISQuery {
     }
 
     private StringBuilder renderURLQuery(StringBuilder queryBuild) {
-        Boolean isFirst = true;
+        boolean isFirst = true;
+        if (paging == false) {
+            isFirst = querySeperator(isFirst, queryBuild);
+            queryBuild.append("paging=false");
+        }
         for (Filter filter : filters) {
             isFirst = querySeperator(isFirst, queryBuild);
             queryBuild.append("filter=");

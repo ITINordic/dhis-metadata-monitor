@@ -18,22 +18,22 @@ import zw.mohcc.dhis.JUnitSoftAssertions;
  * @author cliffordc
  */
 public class DHISQueryTest {
-    
+
     public DHISQueryTest() {
     }
-    
+
     @BeforeClass
     public static void setUpClass() {
     }
-    
+
     @AfterClass
     public static void tearDownClass() {
     }
-    
+
     @Before
     public void setUp() {
     }
-    
+
     @After
     public void tearDown() {
     }
@@ -79,7 +79,7 @@ public class DHISQueryTest {
                 .field(field1)
                 .field(field2)
                 .build();
-        softly.assertThat(query.toURLString()).isEqualTo("http://example.com/api/people/100?fields=children,parent");
+        softly.assertThat(query.toURLString()).isEqualTo("http://example.com/api/people/100?paging=false&fields=children,parent");
     }
 
     @Test
@@ -100,7 +100,7 @@ public class DHISQueryTest {
                 .end()
                 .build();
 
-        softly.assertThat(query.toURLString()).isEqualTo("http://example.com/api/people/100?fields=children[age],parent");
+        softly.assertThat(query.toURLString()).isEqualTo("http://example.com/api/people/100?paging=false&fields=children[age],parent");
     }
 
     @Test
@@ -123,7 +123,28 @@ public class DHISQueryTest {
 
         DHISQuery query = defaultQuery.toBuilder().build();
 
-        softly.assertThat(query.toURLString()).isEqualTo("http://example.com/api/people/100?fields=children[age],parent");
+        softly.assertThat(query.toURLString()).isEqualTo("http://example.com/api/people/100?paging=false&fields=children[age],parent");
+    }
+
+    @Test
+    public void TestDHISQueryBuilderPaging() {
+
+        DHISQuery query = DHISQuery.builder()
+                .url("http://example.com/api")
+                .id("100")
+                .type("people")
+                .build();
+
+        softly.assertThat(query.toURLString()).isEqualTo("http://example.com/api/people/100?paging=false");
+
+        query = DHISQuery.builder()
+                .url("http://example.com/api")
+                .id("100")
+                .type("people")
+                .paging(true)
+                .build();
+
+        softly.assertThat(query.toURLString()).isEqualTo("http://example.com/api/people/100");
     }
 
     @Test
@@ -144,7 +165,7 @@ public class DHISQueryTest {
                 .end()
                 .build();
 
-        softly.assertThat(query.toURLString()).isEqualTo("http://uninitialised.example.com/people/100?fields=children[age],parent");
+        softly.assertThat(query.toURLString()).isEqualTo("http://uninitialised.example.com/people/100?paging=false&fields=children[age],parent");
 
         DHISQuery missingUrl = DHISQuery.builder()
                 // .url("http://example.com/api")
@@ -161,7 +182,7 @@ public class DHISQueryTest {
                 .end()
                 .build();
 
-        softly.assertThat(missingUrl.toURLString()).isEqualTo("http://uninitialised.example.com/people/100?fields=children[age],parent");
+        softly.assertThat(missingUrl.toURLString()).isEqualTo("http://uninitialised.example.com/people/100?paging=false&fields=children[age],parent");
 
         DHISQuery missingType = DHISQuery.builder()
                 .url("http://example.com/api")
@@ -178,7 +199,7 @@ public class DHISQueryTest {
                 .end()
                 .build();
 
-        softly.assertThat(missingType.toURLString()).isEqualTo("http://example.com/api/dataSets/100?fields=children[age],parent");
+        softly.assertThat(missingType.toURLString()).isEqualTo("http://example.com/api/dataSets/100?paging=false&fields=children[age],parent");
 
         DHISQuery missingId = DHISQuery.builder()
                 .url("http://example.com/api")
@@ -195,14 +216,14 @@ public class DHISQueryTest {
                 .end()
                 .build();
 
-        softly.assertThat(missingId.toURLString()).isEqualTo("http://example.com/api/people?fields=children[age],parent");
+        softly.assertThat(missingId.toURLString()).isEqualTo("http://example.com/api/people?paging=false&fields=children[age],parent");
 
         DHISQuery missingFields = DHISQuery.builder()
                 .url("http://example.com/api")
                 .id("100")
                 .type("people")
                 .build();
-        softly.assertThat(missingFields.toURLString()).isEqualTo("http://example.com/api/people/100");
+        softly.assertThat(missingFields.toURLString()).isEqualTo("http://example.com/api/people/100?paging=false");
     }
 
     @Test
@@ -219,7 +240,7 @@ public class DHISQueryTest {
                 .end()
                 .build();
 
-        softly.assertThat(query.toURLString()).isEqualTo("http://example.com/api/people/100?filter=code:eq:001");
+        softly.assertThat(query.toURLString()).isEqualTo("http://example.com/api/people/100?paging=false&filter=code:eq:001");
 
         // multiple filters
         DHISQuery multipleFilters = DHISQuery.builder()
@@ -238,7 +259,7 @@ public class DHISQueryTest {
                 .end()
                 .build();
 
-        softly.assertThat(multipleFilters.toURLString()).isEqualTo("http://example.com/api/people/100?filter=code:eq:001&filter=name:neq:myname");
+        softly.assertThat(multipleFilters.toURLString()).isEqualTo("http://example.com/api/people/100?paging=false&filter=code:eq:001&filter=name:neq:myname");
 
         // single filter no code
         DHISQuery noCode = DHISQuery.builder()
@@ -252,7 +273,7 @@ public class DHISQueryTest {
                 .end()
                 .build();
 
-        softly.assertThat(noCode.toURLString()).isEqualTo("http://example.com/api/people/100?filter=id:eq:001");
+        softly.assertThat(noCode.toURLString()).isEqualTo("http://example.com/api/people/100?paging=false&filter=id:eq:001");
 
         // single filter no op
         DHISQuery noOp = DHISQuery.builder()
@@ -266,7 +287,7 @@ public class DHISQueryTest {
                 .end()
                 .build();
 
-        softly.assertThat(noOp.toURLString()).isEqualTo("http://example.com/api/people/100?filter=code:eq:001");
+        softly.assertThat(noOp.toURLString()).isEqualTo("http://example.com/api/people/100?paging=false&filter=code:eq:001");
 
         // single filter no value
         DHISQuery noValue = DHISQuery.builder()
@@ -280,10 +301,10 @@ public class DHISQueryTest {
                 .end()
                 .build();
 
-        softly.assertThat(noValue.toURLString()).isEqualTo("http://example.com/api/people/100?filter=code:eq");
+        softly.assertThat(noValue.toURLString()).isEqualTo("http://example.com/api/people/100?paging=false&filter=code:eq");
     }
-    
-        @Test
+
+    @Test
     public void TestDHISQueryBuilderFieldAndFilters() {
         // single filter
         DHISQuery query = DHISQuery.builder()
@@ -300,7 +321,7 @@ public class DHISQueryTest {
                 .end()
                 .build();
 
-        softly.assertThat(query.toURLString()).isEqualTo("http://example.com/api/people/100?filter=code:eq:001&fields=children");
-    }    
-    
+        softly.assertThat(query.toURLString()).isEqualTo("http://example.com/api/people/100?paging=false&filter=code:eq:001&fields=children");
+    }
+
 }
