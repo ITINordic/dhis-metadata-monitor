@@ -80,7 +80,7 @@ public class GitClientTest {
         writeStringToFile(data1path, data1v2);
         writeStringToFile(data2path, data2v2);
         String process = gitClient.process(gitDir);
-        StringAssert equalTo = softly.assertThat(process).isEqualTo("");
+        softly.assertThat(process).isEqualTo("");
 
     }
 

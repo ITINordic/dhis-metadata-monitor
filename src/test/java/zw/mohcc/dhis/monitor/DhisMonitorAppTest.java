@@ -65,9 +65,11 @@ public class DhisMonitorAppTest {
     private static final String CATEGORY_COMBO = "categoryCombo";
     private static final String ORGANISATION_UNITS = "organisationUnits";
     private static final String DATA_SET = "dataSets";
+    private static final String DATA_ELEMENTS = "dataElements";
+    private static final String DATA_SET_ELEMENTS = "dataSetElements";
 
     // "http://www.example.org/DataSets?paging=false&filter=code:eq:d1&fields=organisationUnits[name,id,code]"
-    private static final Pattern PATTERN = Pattern.compile("http://www.example.org/(?<type>[^/#?:&]+)\\?paging=false&filter=code:eq:(?<code>[^/#?:&]+).*");
+    private static final Pattern PATTERN = Pattern.compile("http://www.example.org/(?<type>[^/#?:&\\]\\[]+)\\?paging=false&filter=code:eq:(?<code>[^/#?:&\\]\\[]+).*");
 
     private Map<String, Map<String, Object>> dhisObjects;
     private Set<String> noFile;
@@ -128,6 +130,7 @@ public class DhisMonitorAppTest {
     private Map<String, Object> createDataSet(String code,
             String periodType,
             String categoryCombo,
+            String[] dataSetElements,
             String[] organisationUnits) {
 
         HashMap<String, Object> hashMap = new HashMap<>();
@@ -137,8 +140,31 @@ public class DhisMonitorAppTest {
 
         hashMap.put(PERIOD_TYPE, periodType);
         hashMap.put(CATEGORY_COMBO, dhisObjects.get(categoryCombo));
+        hashMap.put(DATA_SET_ELEMENTS, generateListFromString(dataSetElements));
         hashMap.put(ORGANISATION_UNITS, generateListFromString(organisationUnits));
         addDhisObject(postfixString(DATA_SET, code), hashMap);
+        return hashMap;
+    }
+
+    private Map<String, Object> createDataElement(String code,
+            String categoryCombo) {
+
+        HashMap<String, Object> hashMap = new HashMap<>();
+        hashMap.put(CODE, code);
+        hashMap.put(NAME, code + " NAME");
+        hashMap.put(ID, Base64.getEncoder().encodeToString(code.getBytes()));
+
+        hashMap.put(CATEGORY_COMBO, dhisObjects.get(categoryCombo));
+        addDhisObject(postfixString(DATA_ELEMENTS, code), hashMap);
+        return hashMap;
+    }
+
+    private Map<String, Object> createDataSetElement(String code, String categoryCombo, String dataElement) {
+
+        HashMap<String, Object> hashMap = new HashMap<>();
+        hashMap.put(CATEGORY_COMBO, dhisObjects.get(categoryCombo));
+        hashMap.put(DATA_ELEMENTS, dhisObjects.get(dataElement));
+        addDhisObject(postfixString(DATA_SET_ELEMENTS, code), hashMap);
         return hashMap;
     }
 
@@ -284,15 +310,48 @@ public class DhisMonitorAppTest {
         createCategories("cat01");
         createCategories("cat02");
         createCategoryCombo("com01", postfixStringArray(CATEGORIES, "cat01", "cat02"));
-        noFile.add(postfixString(CATEGORY_COMBO, "com01"));
+
+        createDataElement("de01", postfixString(CATEGORY_COMBO, "com01"));
+
+        createDataSetElement("dse01", postfixString(CATEGORY_COMBO, "com01"), postfixString(DATA_ELEMENTS, "de01"));
+        createDataSetElement("dse02", postfixString(CATEGORY_COMBO, "com01"), postfixString(DATA_ELEMENTS, "de01"));
         createOrganisationUnits("org01");
         createOrganisationUnits("org02");
-        createDataSet("d1", "monthly", postfixString(CATEGORY_COMBO, "com01"), postfixStringArray(ORGANISATION_UNITS, "org01", "org02"));
-        createDataSet("d2", "monthly", postfixString(CATEGORY_COMBO, "com01"), postfixStringArray(ORGANISATION_UNITS, "org01", "org02"));
-        createDataSet("a1d3", "monthly", postfixString(CATEGORY_COMBO, "com01"), postfixStringArray(ORGANISATION_UNITS, "org01", "org02"));
-        createDataSet("a1d4", "monthly", postfixString(CATEGORY_COMBO, "com01"), postfixStringArray(ORGANISATION_UNITS, "org01", "org02"));
-        createDataSet("a2d3", "monthly", postfixString(CATEGORY_COMBO, "com01"), postfixStringArray(ORGANISATION_UNITS, "org01", "org02"));
-        createDataSet("a2d4", "monthly", postfixString(CATEGORY_COMBO, "com01"), postfixStringArray(ORGANISATION_UNITS, "org01", "org02"));
+        createDataSet("d1",
+                "monthly",
+                postfixString(CATEGORY_COMBO, "com01"),
+                postfixStringArray(DATA_SET_ELEMENTS, "dse01", "dse01"),
+                postfixStringArray(ORGANISATION_UNITS, "org01", "org02"));
+        createDataSet("d2",
+                "monthly",
+                postfixString(CATEGORY_COMBO, "com01"),
+                postfixStringArray(DATA_SET_ELEMENTS, "dse01", "dse01"),
+                postfixStringArray(ORGANISATION_UNITS, "org01", "org02"));
+        createDataSet("a1d3",
+                "monthly",
+                postfixString(CATEGORY_COMBO, "com01"),
+                postfixStringArray(DATA_SET_ELEMENTS, "dse01", "dse01"),
+                postfixStringArray(ORGANISATION_UNITS, "org01", "org02"));
+        createDataSet("a1d4",
+                "monthly",
+                postfixString(CATEGORY_COMBO, "com01"),
+                postfixStringArray(DATA_SET_ELEMENTS, "dse01", "dse01"),
+                postfixStringArray(ORGANISATION_UNITS, "org01", "org02"));
+        createDataSet("a2d3",
+                "monthly",
+                postfixString(CATEGORY_COMBO, "com01"),
+                postfixStringArray(DATA_SET_ELEMENTS, "dse01", "dse01"),
+                postfixStringArray(ORGANISATION_UNITS, "org01", "org02"));
+        createDataSet("a2d4",
+                "monthly",
+                postfixString(CATEGORY_COMBO, "com01"),
+                postfixStringArray(DATA_SET_ELEMENTS, "dse01", "dse01"),
+                postfixStringArray(ORGANISATION_UNITS, "org01", "org02"));
+
+        noFile.add(postfixString(CATEGORY_COMBO, "com01"));
+        noFile.add(postfixString(DATA_SET_ELEMENTS, "dse01"));
+        noFile.add(postfixString(DATA_SET_ELEMENTS, "dse02"));
+
     }
 
     private void addDhisObject(String code, Map<String, Object> object) {

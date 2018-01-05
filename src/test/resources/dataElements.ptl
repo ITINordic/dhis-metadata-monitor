@@ -1,0 +1,16 @@
+{
+  "dataElements" : [ {
+    "code" : "{{code}}",
+    "name" : "{{name}}",
+    "id" : "{{id}}",
+    "categoryCombo" : {
+      "categories" : [
+{% for cat in categoryCombo.categories %}{
+        "code" : "{{cat.code}}",
+        "name" : "{{cat.name}}",
+        "id" : "{{cat.id}}"
+      }{%if loop.index < loop.length - 1 %},{% endif %} 
+{% endfor %} ]
+    }
+  } ]
+}

@@ -12,7 +12,6 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.nio.file.Path;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -187,24 +186,94 @@ public class DhisMonitorApp {
         if (processed.add(depObjectId)) {
             DHISQuery query = dhisQueryBuilder()
                     .type("dataSets")
-                    .beginField()
-                    .name("dataSetElements")
-                    .beginField().name("categoryCombo").end()
-                    .beginField().name("dataElement").end()
-                    .beginField().name("").end()
-                    .name("categoryCombo")
-                    .beginField().name("categories").end()
+                    .beginField() // 1
+                        .name("name")
                     .end()
-                    .beginField()
-                    .name("organisationUnits")
-                    .beginField().name("name").end()
-                    .beginField().name("id").end()
-                    .beginField().name("code").end()
+                    .beginField() // 1
+                        .name("id")
+                    .end()
+                    .beginField() // 1
+                        .name("code")
+                    .end()
+                    .beginField() // 1
+                        .name("periodType")
+                    .end()
+                    .beginField() // 1
+                        .name("categoryCombo")
+                        .beginField() // 2
+                            .name("categories")
+                            .beginField() // 3
+                                .name("name")
+                            .end()
+                            .beginField() // 3
+                                .name("id")
+                            .end()
+                            .beginField() // 3
+                                .name("code")
+                            .end()                    
+                        .end()
+                    .end()
+                    .beginField() // 1
+                        .name("dataSetElements")  
+                        .beginField() // 2
+                            .name("categoryCombo")
+                            .beginField() // 3
+                                .name("categories")
+                                .beginField() // 4
+                                    .name("name")
+                                .end()
+                                .beginField() // 4
+                                    .name("id")
+                                .end()
+                                .beginField() // 4
+                                    .name("code")
+                                .end()                    
+                            .end()
+                        .end()
+                        .beginField() // 2
+                            .name("dataElement")
+                                .beginField() // 3
+                                    .name("name")
+                                .end()
+                                .beginField() // 3
+                                    .name("id")
+                                .end()
+                                .beginField() // 3
+                                    .name("code")
+                                .end()                    
+                                .beginField() // 3
+                                .name("categoryCombo")
+                                .beginField() // 4
+                                    .name("categories")
+                                    .beginField() // 5
+                                        .name("name")
+                                    .end()
+                                    .beginField() // 5
+                                        .name("id")
+                                    .end()
+                                    .beginField() // 5
+                                        .name("code")
+                                    .end()                    
+                                .end()
+                            .end()
+                        .end()
+                    .end()
+                    .beginField() // 1
+                        .name("organisationUnits")
+                        .beginField() // 2
+                            .name("name")
+                        .end()
+                        .beginField() // 2
+                            .name("id")
+                        .end()
+                        .beginField() // 2
+                            .name("code")
+                        .end()
                     .end()
                     .beginFilter()
-                    .lhs("code")
-                    .op("eq")
-                    .value(code)
+                        .lhs("code")
+                        .op("eq")
+                        .value(code)
                     .end()
                     .build();
             HttpClient httpClient = query.toHttpClient();
@@ -223,12 +292,15 @@ public class DhisMonitorApp {
                     processOrgUnits((String) nodecode, depObjectId, notifyMap, processed, repo);
                 }
                 // dataElements
-                List<String> dataElements = ctx.read("$.dataSets[*].dataSetElements[*].dataElement");
+                List<String> dataElements = ctx.read("$.dataSets[*].dataSetElements[*].dataElement.code");
                 for (String nodecode : dataElements) {
                     processDataElements(nodecode, depObjectId, notifyMap, processed, repo);
                 }
                 // categories
-                List<String> categories = ctx.read("$.dataSets[*].categoryCombo.categories[*].code");
+                // categories on dataSet.categoryCombo do not seem to be used uncomment to add them
+                // List<String> dataSetCategories = ctx.read("$.dataSets[*].categoryCombo.categories[*].code");
+                List<String> categories = ctx.read("$.dataSets[*].dataSetElements[*].categoryCombo.categories[*].code");
+
                 for (String nodecode : categories) {
                     processCategories(nodecode, depObjectId, notifyMap, processed, repo);
                 }
@@ -248,9 +320,15 @@ public class DhisMonitorApp {
         if (processed.add(depObjectId)) {
             DHISQuery query = dhisQueryBuilder()
                     .type("organisationUnits")
-                    .beginField().name("name").end()
-                    .beginField().name("id").end()
-                    .beginField().name("code").end()
+                    .beginField()
+                        .name("name")
+                    .end()
+                    .beginField()
+                        .name("code")
+                    .end()
+                    .beginField()
+                        .name("id")
+                    .end()
                     .beginFilter()
                     .lhs("code")
                     .op("eq")
@@ -269,9 +347,27 @@ public class DhisMonitorApp {
         if (processed.add(depObjectId)) {
             DHISQuery query = dhisQueryBuilder()
                     .type("categories")
-                    .beginField().name("name").end()
-                    .beginField().name("id").end()
-                    .beginField().name("code").end()
+                    .beginField()
+                        .name("name")
+                    .end()
+                    .beginField()
+                        .name("code")
+                    .end()
+                    .beginField()
+                        .name("id")
+                    .end()
+                    .beginField()
+                        .name("categoryOptions")
+                        .beginField() // 2
+                            .name("name")
+                        .end()
+                        .beginField() // 2
+                            .name("code")
+                        .end()
+                        .beginField() // 2
+                            .name("id")
+                        .end()
+                    .end()
                     .beginFilter()
                     .lhs("code")
                     .op("eq")
@@ -290,12 +386,29 @@ public class DhisMonitorApp {
         if (processed.add(depObjectId)) {
             DHISQuery query = dhisQueryBuilder()
                     .type("dataElements")
-                    .beginField().name("name").end()
-                    .beginField().name("id").end()
-                    .beginField().name("code").end()
-                    .beginField().name("categories") // begin cat
-                    .beginField().name("name").end()
-                    .beginField().name("code").end()
+                    .beginField()
+                        .name("name")
+                    .end()
+                    .beginField()
+                        .name("id")
+                    .end()
+                    .beginField()
+                        .name("code")
+                    .end()
+                    .beginField()
+                    .name("categoryCombo") // 2
+                        .beginField()
+                            .name("categories")
+                            .beginField() // 3
+                                .name("name")
+                            .end()
+                            .beginField() // 3
+                                .name("code")
+                            .end()
+                            .beginField() // 3
+                                .name("id")
+                            .end()
+                        .end()
                     .end()
                     .beginFilter()
                     .lhs("code")
@@ -309,7 +422,7 @@ public class DhisMonitorApp {
             // parse json
             DocumentContext ctx = JsonPath.using(jsonPathConf).parse(result);
             // categories
-            List<String> categories = ctx.read("$.dataSets[*].categoryCombo.categories[*].code");
+            List<String> categories = ctx.read("$.dataElements[*].categoryCombo.categories[*].code");
             for (String nodecode : categories) {
                 processCategories(nodecode, depObjectId, notifyMap, processed, repo);
             }
