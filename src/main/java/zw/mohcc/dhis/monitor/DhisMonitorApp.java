@@ -188,10 +188,12 @@ public class DhisMonitorApp {
             DHISQuery query = dhisQueryBuilder()
                     .type("dataSets")
                     .beginField()
-                    .name("organisationUnits")
-                    .beginField().name("name").end()
-                    .beginField().name("id").end()
-                    .beginField().name("code").end()
+                    .name("dataSetElements")
+                    .beginField().name("categoryCombo").end()
+                    .beginField().name("dataElement").end()
+                    .beginField().name("").end()
+                    .name("categoryCombo")
+                    .beginField().name("categories").end()
                     .end()
                     .beginField()
                     .name("organisationUnits")
@@ -221,7 +223,7 @@ public class DhisMonitorApp {
                     processOrgUnits((String) nodecode, depObjectId, notifyMap, processed, repo);
                 }
                 // dataElements
-                List<String> dataElements = ctx.read("$.dataSets[*].dataElements");
+                List<String> dataElements = ctx.read("$.dataSets[*].dataSetElements[*].dataElement");
                 for (String nodecode : dataElements) {
                     processDataElements(nodecode, depObjectId, notifyMap, processed, repo);
                 }

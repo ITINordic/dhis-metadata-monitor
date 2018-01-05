@@ -2,11 +2,14 @@ package zw.mohcc.dhis.email;
 
 import java.util.Map;
 import java.util.Properties;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.mail.Message;
 import javax.mail.MessagingException;
 import javax.mail.PasswordAuthentication;
 import javax.mail.Session;
 import javax.mail.Transport;
+import javax.mail.internet.AddressException;
 import javax.mail.internet.InternetAddress;
 import javax.mail.internet.MimeMessage;
 
@@ -14,7 +17,7 @@ import javax.mail.internet.MimeMessage;
  *
  * @author Charles Chigoriwa
  */
-public class SendMailImpl {
+public class SendMailImpl implements EmailClient {
 
     private static final String SMTP_HOST_NAME = "localhost";
     private static final String SMTP_PORT = "25";
@@ -51,39 +54,48 @@ public class SendMailImpl {
         this.props.putAll(settings);
     }
 
-    /* (non-Javadoc)
-   * @see com.commerce4j.storefront.utils.SendMail#sendMessage(java.lang.String, java.lang.String[], java.lang.String, java.lang.String)
+    /**
+     *
+     * @param from
+     * @param recipients
+     * @param subject
+     * @param message
+     * @throws MessagingException
      */
+    @Override
     public void sendMessage(
             String from, String recipients[],
             String subject, String message
-    ) throws MessagingException {
+    ) {
+        try {
+            // Security.addProvider(new com.sun.net.ssl.internal.ssl.Provider());
+            boolean debug = Boolean.valueOf(props.getProperty("mail.debug"));
 
-        // Security.addProvider(new com.sun.net.ssl.internal.ssl.Provider());
-        boolean debug = Boolean.valueOf(props.getProperty("mail.debug"));
+            Session session = Session.getDefaultInstance(props, new javax.mail.Authenticator() {
+                @Override
+                protected PasswordAuthentication getPasswordAuthentication() {
+                    return new PasswordAuthentication(username, password);
+                }
+            });
 
-        Session session = Session.getDefaultInstance(props, new javax.mail.Authenticator() {
-            @Override
-            protected PasswordAuthentication getPasswordAuthentication() {
-                return new PasswordAuthentication(username, password);
+            session.setDebug(debug);
+            Message msg = new MimeMessage(session);
+            InternetAddress addressFrom = new InternetAddress(from);
+            msg.setFrom(addressFrom);
+
+            InternetAddress[] addressTo = new InternetAddress[recipients.length];
+            for (int i = 0; i < recipients.length; i++) {
+                addressTo[i] = new InternetAddress(recipients[i]);
             }
-        });
+            msg.setRecipients(Message.RecipientType.TO, addressTo);
 
-        session.setDebug(debug);
-        Message msg = new MimeMessage(session);
-        InternetAddress addressFrom = new InternetAddress(from);
-        msg.setFrom(addressFrom);
-
-        InternetAddress[] addressTo = new InternetAddress[recipients.length];
-        for (int i = 0; i < recipients.length; i++) {
-            addressTo[i] = new InternetAddress(recipients[i]);
+            // Setting the Subject and Content Type
+            msg.setSubject(subject);
+            msg.setContent(message, "text/html");
+            Transport.send(msg, addressTo);
+        } catch (MessagingException ex) {
+            Logger.getLogger(SendMailImpl.class.getName()).log(Level.SEVERE, null, ex);
         }
-        msg.setRecipients(Message.RecipientType.TO, addressTo);
-
-        // Setting the Subject and Content Type
-        msg.setSubject(subject);
-        msg.setContent(message, "text/html");
-        Transport.send(msg, addressTo);
     }
 
     /**

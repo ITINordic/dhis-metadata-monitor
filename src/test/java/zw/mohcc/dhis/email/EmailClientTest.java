@@ -58,7 +58,9 @@ public class EmailClientTest {
         String[] toEmails = new String[]{"jane@example.org", "john@example.org"};
         EmailClient instance = new EmailClientImpl();
         instance.sendMessage(from, toEmails, subject, msg);
-        // softly;
+        softly.assertThat(sentEmail)
+                .containsKeys("from", "subject", "message", "recipients")
+                .containsValues(from, subject, msg, toEmails);
     }
 
 
