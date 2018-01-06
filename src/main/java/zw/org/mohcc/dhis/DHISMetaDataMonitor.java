@@ -15,6 +15,7 @@ import org.apache.commons.cli.DefaultParser;
 import org.apache.commons.cli.HelpFormatter;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
+import spark.Spark;
 import zw.org.mohcc.dhis.email.SendMailImpl;
 import zw.org.mohcc.dhis.monitor.DhisMonitorApp;
 import zw.org.mohcc.dhis.monitor.MonitorConfig;
@@ -43,7 +44,7 @@ public class DHISMetaDataMonitor {
                 HelpFormatter formatter = new HelpFormatter();
                 formatter.printHelp("DHIS Monitor", options);
             } else {
-
+                Spark.ipAddress("127.0.0.1");
                 Path appHome = Paths.get(System.getProperty("user.home")).resolve(".sadombo");
                 MonitorConfig.MonitorConfigBuilder configBuild
                         = MonitorConfig.builder()
