@@ -236,7 +236,7 @@ public class DhisMonitorAppTest {
             }
             softly.assertThat(repo.resolve(key + ".json")).exists();
         }
-        softly.assertThat(monitor).flatExtracting(item -> item.getMessages()).isEmpty();
+        softly.assertThat(monitor).flatExtracting(item -> item.getFileDiffs()).isEmpty();
         for (File file : FileUtils.listFilesAndDirs(config.getAppHome().toFile(), TrueFileFilter.INSTANCE, TrueFileFilter.INSTANCE)) {
             System.out.println(file.getPath());
         }
@@ -275,8 +275,8 @@ public class DhisMonitorAppTest {
         for (File file : FileUtils.listFilesAndDirs(root.toFile(), TrueFileFilter.INSTANCE, TrueFileFilter.INSTANCE)) {
             System.out.println(file.getPath());
         }
-        softly.assertThat(monitor1).flatExtracting(item -> item.getMessages()).isEmpty();
-        softly.assertThat(monitor2).flatExtracting(item -> item.getMessages()).isNotEmpty();
+        softly.assertThat(monitor1).flatExtracting(item -> item.getFileDiffs()).isEmpty();
+        softly.assertThat(monitor2).flatExtracting(item -> item.getFileDiffs()).isNotEmpty();
         final Condition<Map<String, List<String>>> onlyOneMessage = new Condition<Map<String, List<String>>>() {
             @Override
             public boolean matches(Map<String, List<String>> value) {

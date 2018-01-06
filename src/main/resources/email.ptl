@@ -1,0 +1,32 @@
+<html>
+<head>
+	<title>DHIS Monitoring Report</title>
+</head>
+<body>
+    <div id="content">
+    {% for file in files %}
+        <h3>{{file.name}}</h3>
+        {% for patch in file.patches %}
+        {# <p>{{patch.delta}}</p> #}
+            <table>
+                <thead>
+                     <tr>
+                         <th>
+                            Original lines: {{patch.delta.original.position()}} - {{patch.delta.original.last()}}
+                         </th>
+                          <th>
+                            Revised lines: {{patch.delta.revised.position()}} - {{patch.delta.revised.last()}}
+                         </th>
+                        <th>
+                         </th>
+                      </tr>
+                </thead>
+            {% for diffRow in patch.diffRows %}
+                  <tr><td>{{diffRow.oldLine | escape(strategy="space")}}</td> <td>{{diffRow.newLine | escape(strategy="space")}}</td></tr>  
+            {% endfor %}
+            </table>
+        {% endfor %}
+    {% endfor %}
+    </div>
+</body>
+</html>

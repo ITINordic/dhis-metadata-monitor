@@ -6,6 +6,7 @@
 package zw.mohcc.dhis.monitor;
 
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
 import lombok.Data;
 import lombok.NonNull;
@@ -21,5 +22,5 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class Notify {
     @NonNull private DataSetGroupConfig group;
-    private Set<String> messages = new HashSet<>();
+    private Set<Map<String, Object>> fileDiffs = new HashSet<>();
 }
