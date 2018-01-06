@@ -20,7 +20,9 @@ import zw.mohcc.dhis.monitor.DhisMonitorApp;
 import zw.mohcc.dhis.monitor.MonitorConfig;
 
 public class DHISMetaDataMonitor {
-
+    // TODO: 1. Add tests for email configuration
+    // TODO: 2. Use buffered read and write to improve speed 
+    
     /**
      * @param args the command line arguments
      */

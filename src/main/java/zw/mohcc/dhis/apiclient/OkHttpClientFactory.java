@@ -63,12 +63,8 @@ public class OkHttpClientFactory implements HttpClientFactory {
             Response response;
             try {
                 response = client.newCall(request).execute();
-                ObjectMapper mapper = new ObjectMapper();
-                final ResponseBody body = response.body();
-                if (body != null) {
-                    Object json = mapper.readValue(body.string(), Object.class);
-                    return mapper.writerWithDefaultPrettyPrinter().writeValueAsString(json);
-                }
+                final String result = response.body().string();
+                return result == null ? "" : result;
             } catch (IOException ex) {
                 Logger.getLogger(OkHttpClient.class.getName()).log(Level.SEVERE, null, ex);
             }

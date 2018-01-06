@@ -5,12 +5,18 @@
  */
 package zw.mohcc.dhis.monitor;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ArrayNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.github.difflib.UnifiedDiffUtils;
 import com.github.difflib.algorithm.DiffException;
 import com.github.difflib.patch.Delta;
 import com.github.difflib.patch.Patch;
 import com.github.difflib.text.DiffRow;
 import com.github.difflib.text.DiffRowGenerator;
+import com.google.common.collect.Lists;
 import com.jayway.jsonpath.Configuration;
 import com.jayway.jsonpath.DocumentContext;
 import com.jayway.jsonpath.JsonPath;
@@ -23,9 +29,13 @@ import java.io.IOException;
 import java.io.StringWriter;
 import java.io.Writer;
 import java.nio.file.Path;
+import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -84,7 +94,7 @@ public class DhisMonitorApp {
         this.config = config;
 
         try {
-            PebbleEngine engine = new PebbleEngine.Builder().addEscapingStrategy("space", new EscapingStrategy(){
+            PebbleEngine engine = new PebbleEngine.Builder().addEscapingStrategy("space", new EscapingStrategy() {
                 @Override
                 public String escape(String input) {
                     return input.replace(" ", "&nbsp;");
@@ -271,113 +281,110 @@ public class DhisMonitorApp {
         final String depObjectId = dhisUniqueObjectId(code, "dataSets");
         addDepNotifyRequest(notifyMap, depObjectId, parentObjectId);
         if (processed.add(depObjectId)) {
-            DHISQuery query = dhisQueryBuilder()
-                    .type("dataSets")
-                    .beginField() // 1
-                    .name("name")
-                    .end()
-                    .beginField() // 1
-                    .name("id")
-                    .end()
-                    .beginField() // 1
-                    .name("code")
-                    .end()
-                    .beginField() // 1
-                    .name("periodType")
-                    .end()
-                    .beginField() // 1
-                    .name("categoryCombo")
-                    .beginField() // 2
-                    .name("categories")
-                    .beginField() // 3
-                    .name("name")
-                    .end()
-                    .beginField() // 3
-                    .name("id")
-                    .end()
-                    .beginField() // 3
-                    .name("code")
-                    .end()
-                    .end()
-                    .end()
-                    .beginField() // 1
-                    .name("dataSetElements")
-                    .beginField() // 2
-                    .name("categoryCombo")
-                    .beginField() // 3
-                    .name("categories")
-                    .beginField() // 4
-                    .name("name")
-                    .end()
-                    .beginField() // 4
-                    .name("id")
-                    .end()
-                    .beginField() // 4
-                    .name("code")
-                    .end()
-                    .end()
-                    .end()
-                    .beginField() // 2
-                    .name("dataElement")
-                    .beginField() // 3
-                    .name("name")
-                    .end()
-                    .beginField() // 3
-                    .name("id")
-                    .end()
-                    .beginField() // 3
-                    .name("code")
-                    .end()
-                    .beginField() // 3
-                    .name("categoryCombo")
-                    .beginField() // 4
-                    .name("categories")
-                    .beginField() // 5
-                    .name("name")
-                    .end()
-                    .beginField() // 5
-                    .name("id")
-                    .end()
-                    .beginField() // 5
-                    .name("code")
-                    .end()
-                    .end()
-                    .end()
-                    .end()
-                    .end()
-                    .beginField() // 1
-                    .name("organisationUnits")
-                    .beginField() // 2
-                    .name("name")
-                    .end()
-                    .beginField() // 2
-                    .name("id")
-                    .end()
-                    .beginField() // 2
-                    .name("code")
-                    .end()
-                    .end()
-                    .beginFilter()
-                    .lhs("code")
-                    .op("eq")
-                    .value(code)
-                    .end()
-                    .build();
-            HttpClient httpClient = query.toHttpClient();
-            String result = httpClient.call();
             try {
+                DHISQuery query = dhisQueryBuilder()
+                        .type("dataSets")
+                        .beginField() // 1
+                        .name("name")
+                        .end()
+                        .beginField() // 1
+                        .name("id")
+                        .end()
+                        .beginField() // 1
+                        .name("code")
+                        .end()
+                        .beginField() // 1
+                        .name("periodType")
+                        .end()
+                        .beginField() // 1
+                        .name("categoryCombo")
+                        .beginField() // 2
+                        .name("categories")
+                        .beginField() // 3
+                        .name("name")
+                        .end()
+                        .beginField() // 3
+                        .name("id")
+                        .end()
+                        .beginField() // 3
+                        .name("code")
+                        .end()
+                        .end()
+                        .end()
+                        .beginField() // 1
+                        .name("dataSetElements")
+                        .beginField() // 2
+                        .name("categoryCombo")
+                        .beginField() // 3
+                        .name("categories")
+                        .beginField() // 4
+                        .name("name")
+                        .end()
+                        .beginField() // 4
+                        .name("id")
+                        .end()
+                        .beginField() // 4
+                        .name("code")
+                        .end()
+                        .end()
+                        .end()
+                        .beginField() // 2
+                        .name("dataElement")
+                        .beginField() // 3
+                        .name("name")
+                        .end()
+                        .beginField() // 3
+                        .name("id")
+                        .end()
+                        .beginField() // 3
+                        .name("code")
+                        .end()
+                        .beginField() // 3
+                        .name("categoryCombo")
+                        .beginField() // 4
+                        .name("categories")
+                        .beginField() // 5
+                        .name("name")
+                        .end()
+                        .beginField() // 5
+                        .name("id")
+                        .end()
+                        .beginField() // 5
+                        .name("code")
+                        .end()
+                        .end()
+                        .end()
+                        .end()
+                        .end()
+                        .beginField() // 1
+                        .name("organisationUnits")
+                        .beginField() // 2
+                        .name("name")
+                        .end()
+                        .beginField() // 2
+                        .name("id")
+                        .end()
+                        .beginField() // 2
+                        .name("code")
+                        .end()
+                        .end()
+                        .beginFilter()
+                        .lhs("code")
+                        .op("eq")
+                        .value(code)
+                        .end()
+                        .build();
+                HttpClient httpClient = query.toHttpClient();
+                String result = queryAndSort(httpClient);
                 writeFile(depObjectId, repo, result);
-            } catch (IOException ex) {
-                Logger.getLogger(DhisMonitorApp.class.getName()).log(Level.SEVERE, null, ex);
-            }
-            // parser dataset and populate toprocess with dependancies
-            try {
+
+                // parser dataset and populate toprocess with dependancies
                 DocumentContext ctx = JsonPath.using(jsonPathConf).parse(result);
                 // organisationUnits
-                List<String> orgUnits = ctx.read("$.dataSets[*].organisationUnits[*].code");
-                for (Object nodecode : orgUnits) {
-                    processOrgUnits((String) nodecode, depObjectId, notifyMap, processed, repo);
-                }
+//                List<String> orgUnits = ctx.read("$.dataSets[*].organisationUnits[*].code");
+//                for (Object nodecode : orgUnits) {
+//                    processOrgUnits((String) nodecode, depObjectId, notifyMap, processed, repo);
+//                }
                 // dataElements
                 List<String> dataElements = ctx.read("$.dataSets[*].dataSetElements[*].dataElement.code");
                 for (String nodecode : dataElements) {
@@ -395,6 +402,15 @@ public class DhisMonitorApp {
                 Logger.getLogger(DhisMonitorApp.class.getName()).log(Level.SEVERE, null, ex);
             }
         }
+    }
+
+    private String queryAndSort(HttpClient httpClient) throws JsonProcessingException, IOException {
+        String result = httpClient.call();
+        ObjectMapper mapper = new ObjectMapper();
+        JsonNode json = mapper.readTree(result);
+        SortJsonTree.sort(json);
+        result = mapper.writerWithDefaultPrettyPrinter().writeValueAsString(json);
+        return result;
     }
 
     static String dhisUniqueObjectId(String code, String type) {
@@ -423,7 +439,7 @@ public class DhisMonitorApp {
                     .end()
                     .build();
             HttpClient httpClient = query.toHttpClient();
-            String result = httpClient.call();
+            String result = queryAndSort(httpClient);
             writeFile(depObjectId, repo, result);
         }
     }
@@ -462,7 +478,7 @@ public class DhisMonitorApp {
                     .end()
                     .build();
             HttpClient httpClient = query.toHttpClient();
-            String result = httpClient.call();
+            String result = queryAndSort(httpClient);
             writeFile(depObjectId, repo, result);
         }
     }
@@ -504,7 +520,7 @@ public class DhisMonitorApp {
                     .end()
                     .build();
             HttpClient httpClient = query.toHttpClient();
-            String result = httpClient.call();
+            String result = queryAndSort(httpClient);
             writeFile(depObjectId, repo, result);
             // parse json
             DocumentContext ctx = JsonPath.using(jsonPathConf).parse(result);

@@ -31,7 +31,7 @@ public class FileEmailClient implements EmailClient{
     public void sendMessage(String from, String[] recipients, String subject, String message) {
         final String dirname = Arrays.stream(recipients).collect(Collectors.joining("_"));
         final Path emailDir = emailRoot.resolve(dirname);
-        final String filename = "email_"+java.time.LocalDateTime.now().format(DateTimeFormatter.ISO_DATE_TIME);
+        final String filename = "email_"+java.time.LocalDateTime.now().format(DateTimeFormatter.ISO_DATE_TIME) + ".html";
         final File file = emailDir.resolve(filename).toFile();
         try {
             FileUtils.writeStringToFile(file, String.format("From: %s\nSubject: %s\n\n%s", from, subject, message));
