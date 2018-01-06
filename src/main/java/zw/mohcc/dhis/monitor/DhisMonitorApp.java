@@ -381,10 +381,10 @@ public class DhisMonitorApp {
                 // parser dataset and populate toprocess with dependancies
                 DocumentContext ctx = JsonPath.using(jsonPathConf).parse(result);
                 // organisationUnits
-//                List<String> orgUnits = ctx.read("$.dataSets[*].organisationUnits[*].code");
-//                for (Object nodecode : orgUnits) {
-//                    processOrgUnits((String) nodecode, depObjectId, notifyMap, processed, repo);
-//                }
+                List<String> orgUnits = ctx.read("$.dataSets[*].organisationUnits[*].code");
+                for (Object nodecode : orgUnits) {
+                    processOrgUnits((String) nodecode, depObjectId, notifyMap, processed, repo);
+                }
                 // dataElements
                 List<String> dataElements = ctx.read("$.dataSets[*].dataSetElements[*].dataElement.code");
                 for (String nodecode : dataElements) {
