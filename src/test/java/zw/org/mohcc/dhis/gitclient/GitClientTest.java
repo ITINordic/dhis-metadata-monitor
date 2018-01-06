@@ -17,7 +17,7 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.Rule;
 import org.junit.rules.TemporaryFolder;
-import zw.mohcc.dhis.JUnitSoftAssertions;
+import zw.org.mohcc.dhis.JUnitSoftAssertions;
 
 /**
  *

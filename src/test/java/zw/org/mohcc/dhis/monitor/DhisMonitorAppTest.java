@@ -42,7 +42,7 @@ import org.junit.BeforeClass;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
-import zw.mohcc.dhis.JUnitSoftAssertions;
+import zw.org.mohcc.dhis.JUnitSoftAssertions;
 import zw.org.mohcc.dhis.apiclient.HttpClient;
 import zw.org.mohcc.dhis.apiclient.HttpClientFactory;
 import zw.org.mohcc.dhis.email.EmailClient;

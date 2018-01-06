@@ -26,7 +26,7 @@ sourceCompatibility = '1.8'
 // prefer. In this case NetBeans will not add these tasks but you may rely on
 // your own implementation.
 if (!hasProperty('mainClass')) {
-    ext.mainClass = 'zw.mohcc.dhis.DHISMetaDataMonitor'
+    ext.mainClass = 'zw.org.mohcc.dhis.DHISMetaDataMonitor'
 }
 
 repositories {
@@ -104,15 +104,15 @@ sourceSets {
 }
 
 assertjGen {
-    classes = ['zw.mohcc.dhis.apiclient.DHISQuery'
-        , 'zw.mohcc.dhis.apiclient.Field'
-        , 'zw.mohcc.dhis.apiclient.Filter'
-        , 'zw.mohcc.dhis.gitclient.GitClient'
-        , 'zw.mohcc.dhis.gitclient.GitProcessingFailedException'
-        , 'zw.mohcc.dhis.monitor.MonitorConfig'
-        , 'zw.mohcc.dhis.monitor.DataSetGroupConfig']
+    classes = ['zw.org.mohcc.dhis.apiclient.DHISQuery'
+        , 'zw.org.mohcc.dhis.apiclient.Field'
+        , 'zw.org.mohcc.dhis.apiclient.Filter'
+        , 'zw.org.mohcc.dhis.gitclient.GitClient'
+        , 'zw.org.mohcc.dhis.gitclient.GitProcessingFailedException'
+        , 'zw.org.mohcc.dhis.monitor.MonitorConfig'
+        , 'zw.org.mohcc.dhis.monitor.DataSetGroupConfig']
 
-    entryPointClassPackage = 'zw.mohcc.dhis'
+    entryPointClassPackage = 'zw.org.mohcc.dhis'
     generateAssertionsForAllFields = true
 
 }
@@ -120,7 +120,7 @@ assertjGen {
 publishing {
     publications {
         mavenJava(MavenPublication) {
-            groupId 'zw.mohcc.dhis'
+            groupId 'zw.org.mohcc.dhis'
             artifactId 'dhis-metadata-monitor'
             version '1.0-SNAPSHOT'
             from components.java

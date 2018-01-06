@@ -13,7 +13,7 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.Rule;
-import zw.mohcc.dhis.JUnitSoftAssertions;
+import zw.org.mohcc.dhis.JUnitSoftAssertions;
 
 /**
  *

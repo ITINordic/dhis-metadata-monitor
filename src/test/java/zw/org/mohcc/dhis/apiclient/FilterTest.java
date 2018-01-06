@@ -5,16 +5,13 @@
  */
 package zw.org.mohcc.dhis.apiclient;
 
-import zw.org.mohcc.dhis.apiclient.Filter;
-import java.util.List;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
-import org.junit.Test;
-import static org.junit.Assert.*;
 import org.junit.Rule;
-import zw.mohcc.dhis.JUnitSoftAssertions;
+import org.junit.Test;
+import zw.org.mohcc.dhis.JUnitSoftAssertions;
 
 /**
  *
