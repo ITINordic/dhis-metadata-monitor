@@ -30,6 +30,7 @@ import java.io.StringWriter;
 import java.io.Writer;
 import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
@@ -245,9 +246,15 @@ public class DhisMonitorApp {
                 Map<String, Object> templateCtx = new HashMap<>();
                 templateCtx.put("files", value.getFileDiffs());
                 try {
+                    final String[] recipients = new String[]{email};
                     String msg = writeTemplate(emailTemplate, templateCtx);
-                    emailClient.sendMessage(config.getDefaultFromEmailAccount(),
-                            new String[]{email},
+                    Logger.getLogger(DhisMonitorApp.class.getName()).log(Level.INFO,
+                            String.format("Sending emails to: %s\n%s",
+                                    Arrays.stream(recipients).collect(Collectors.joining(", ")),
+                                    msg
+                            )
+                    );
+                    emailClient.sendMessage(config.getDefaultFromEmailAccount(), recipients,
                             "DHIS Monitoring Report",
                             msg);
                 } catch (IOException ex) {
