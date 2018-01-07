@@ -47,56 +47,57 @@ public class GitClient {
     }
 
     private static void listUncommitedChages(Git git) throws IOException, GitAPIException {
-        System.out.println("Listing uncommitted changes:");
+                    Logger.getLogger(GitClient.class.getName()).log(Level.INFO, "Listing uncommitted changes:");
         Status status = git.status().call();
         Set<String> conflicting = status.getConflicting();
         for (String conflict : conflicting) {
-            System.out.println("Conflicting: " + conflict);
+            Logger.getLogger(GitClient.class.getName()).log(Level.INFO, "Conflicting: " + conflict);
         }
 
         Set<String> added = status.getAdded();
         for (String add : added) {
-            System.out.println("Added: " + add);
+            Logger.getLogger(GitClient.class.getName()).log(Level.INFO, "Added: " + add);
+            
         }
 
         Set<String> changed = status.getChanged();
         for (String change : changed) {
-            System.out.println("Change: " + change);
+            Logger.getLogger(GitClient.class.getName()).log(Level.INFO, "Change: " + change);
         }
 
         Set<String> missing = status.getMissing();
         for (String miss : missing) {
-            System.out.println("Missing: " + miss);
+            Logger.getLogger(GitClient.class.getName()).log(Level.INFO, "Missing: " + miss);
         }
 
         Set<String> modified = status.getModified();
         for (String modify : modified) {
-            System.out.println("Modification: " + modify);
+            Logger.getLogger(GitClient.class.getName()).log(Level.INFO, "Modification: " + modify);
         }
 
         Set<String> removed = status.getRemoved();
         for (String remove : removed) {
-            System.out.println("Removed: " + remove);
+            Logger.getLogger(GitClient.class.getName()).log(Level.INFO, "Removed: " + remove);
         }
 
         Set<String> uncommittedChanges = status.getUncommittedChanges();
         for (String uncommitted : uncommittedChanges) {
-            System.out.println("Uncommitted: " + uncommitted);
+            Logger.getLogger(GitClient.class.getName()).log(Level.INFO, "Uncommitted: " + uncommitted);
         }
 
         Set<String> untracked = status.getUntracked();
         for (String untrack : untracked) {
-            System.out.println("Untracked: " + untrack);
+            Logger.getLogger(GitClient.class.getName()).log(Level.INFO, "Untracked: " + untrack);
         }
 
         Set<String> untrackedFolders = status.getUntrackedFolders();
         for (String untrack : untrackedFolders) {
-            System.out.println("Untracked Folder: " + untrack);
+            Logger.getLogger(GitClient.class.getName()).log(Level.INFO, "Untracked Folder: " + untrack);
         }
 
         Map<String, StageState> conflictingStageState = status.getConflictingStageState();
         for (Map.Entry<String, StageState> entry : conflictingStageState.entrySet()) {
-            System.out.println("ConflictingState: " + entry);
+            Logger.getLogger(GitClient.class.getName()).log(Level.INFO, "ConflictingState: " + entry);
         }
     }
 // source: https://stackoverflow.com/questions/23486483/file-diff-against-the-last-commit-with-jgit

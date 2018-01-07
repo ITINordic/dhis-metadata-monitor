@@ -44,6 +44,11 @@ public class MonitorConfig {
     private String apiRootUrl;
     private String username;
     private String password;
+    private String javaLoggingFile;
+
+    @Builder.Default
+    private String bindAddress = "127.0.0.1";
+
     private Path appHome;
     private HttpClientFactory clientFactory;
     private EmailClient emailClient;
@@ -56,8 +61,8 @@ public class MonitorConfig {
 
     @Singular
     private Set<DataSetGroupConfig> dataSetGroups;
-    
-    public String getDefaultFromEmailAccount(){
+
+    public String getDefaultFromEmailAccount() {
         final String email = mailSettings.get("mail.default.email");
         return email == null ? "info@example.org" : email;
     }
@@ -121,7 +126,7 @@ public class MonitorConfig {
 
         private void updateFields(final String key, final Object value) throws IllegalAccessException, NoSuchFieldException {
             // FIXME: work around different types used between MonitorConfig and MonitorConfigBuilder
-            if(value == null){
+            if (value == null) {
                 return;
             } else if (value instanceof Map) {
                 Map<Object, Object> map = (Map<Object, Object>) value;

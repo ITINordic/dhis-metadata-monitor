@@ -1,0 +1,15 @@
+[Unit]
+Description = DHIS Metadata Monitor
+After network.target = dhis-metadata-monitor.service
+
+[Service]
+Type = forking
+ExecStart = /usr/local/bin/dhis-metadata-monitor.sh start
+ExecStop = /usr/local/bin/dhis-metadata-monitor.sh stop
+ExecReload = /usr/local/bin/dhis-metadata-monitor.sh reload
+User = dhis-metadata-monitor
+Group = dhis-metadata-monitor
+
+[Install]
+WantedBy=multi-user.target
+

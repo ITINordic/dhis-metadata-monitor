@@ -6,6 +6,16 @@
 <style type="text/css">/*...*/</style>
 </head>
 <body>
-<h1>dhis-metadata-monitor</h1><h2>NetBeans config</h2><p>Using JUnit Test Suite with Gradle and NetBeans results in tests being executed multiple times.</p><p>Goto Project Properties-&gt;Built-in tasks and add this argument to all test tasks "-Dtest.single=MohccSuite"</p><h2>HTTP Client Factory and Email Client</h2><p>For the moment it is not possible to select the client factory or email client from config files</p><p>The client factory or email client can be configured using the MonitorConfig.</p><p>Implementing this would increase code complexity with little gained as the clients are not expected to be changed frequently</p><h2>Jackson deserialiser</h2><p>This project makes use of jackson json deserialisation</p><p>They are known security risks in using jackson deserializer</p><p>Please read link below before enabling "ObjectMapper.enableDefaultTyping()"</p><p>https://github.com/FasterXML/jackson-docs/wiki/JacksonPolymorphicDeserialization</p>
+<h1>dhis-metadata-monitor</h1><h2>NetBeans config</h2><p>Using JUnit Test Suite with Gradle and NetBeans results in tests being executed multiple times.</p><p>Goto Project Properties-&gt;Built-in tasks and add this argument to all test tasks "-Dtest.single=MohccSuite"</p><h2>HTTP Client Factory and Email Client</h2><p>For the moment it is not possible to select the client factory or email client from config files</p><p>The client factory or email client can be configured using the MonitorConfig.</p><p>Implementing this would increase code complexity with little gained as the clients are not expected to be changed frequently</p><h2>Jackson deserialiser</h2><p>This project makes use of jackson json deserialisation</p><p>They are known security risks in using jackson deserializer</p><p>Please read link below before enabling "ObjectMapper.enableDefaultTyping()"</p><p>https://github.com/FasterXML/jackson-docs/wiki/JacksonPolymorphicDeserialization</p><h2>Installing Ubuntu 16.04</h2><p>To create the ubuntu service use the files in src_install</p>
+<ol>
+  <li>Create a user to use for the service using adduser --system --group --disabled-password dhis-metadata-monitor</li>
+  <li>Create systemd unit file /etc/systemd/system/dhis-metadata-monitor.service and specify the user and group created earlier. Example available in src_install</li>
+  <li>Create startup script /usr/local/bin/dhis-metadata-monitor.sh. Example available in src_install</li>
+  <li>Create config folder /etc/dhis-metadata-monitor/</li>
+  <li>Create pid folder /var/run/dhis-metadata-monitor/</li>
+  <li>Give the the service account ownership of the folders using chown dhis-metadata-monitor:dhis-metadata-monitor -R</li>
+  <li>Enable service at startup by using systemctl enable dhis-metadata-monitor.service</li>
+  <li>Start the service using systemctl start dhis-metadata-monitor.service</li>
+</ol><p>You can trigger monitoring using curl localhost:4567/monitor</p>
 </body>
 </html>

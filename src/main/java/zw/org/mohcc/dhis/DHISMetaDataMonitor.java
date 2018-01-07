@@ -1,5 +1,6 @@
 package zw.org.mohcc.dhis;
 
+import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -8,6 +9,7 @@ import java.nio.file.Paths;
 import java.util.Map;
 import java.util.Properties;
 import java.util.logging.Level;
+import java.util.logging.LogManager;
 import java.util.logging.Logger;
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.CommandLineParser;
@@ -23,7 +25,7 @@ import zw.org.mohcc.dhis.monitor.MonitorConfig;
 public class DHISMetaDataMonitor {
     // TODO: 1. Add tests for email configuration
     // TODO: 2. Use buffered read and write to improve speed 
-    
+
     /**
      * @param args the command line arguments
      */
@@ -44,38 +46,91 @@ public class DHISMetaDataMonitor {
                 HelpFormatter formatter = new HelpFormatter();
                 formatter.printHelp("DHIS Monitor", options);
             } else {
-                Spark.ipAddress("127.0.0.1");
-                Path appHome = Paths.get(System.getProperty("user.home")).resolve(".sadombo");
                 MonitorConfig.MonitorConfigBuilder configBuild
-                        = MonitorConfig.builder()
-                                .appHome(appHome)
-                                .addPropertiesConfig(openConfig(appHome, "secret.properties"))
-                                .addPropertiesConfig(openConfig(appHome, "config.properties"))
-                                .addJsonPathJacksonConfiguration();
+                        = openConfig();
+
+                final MonitorConfig conf = configBuild.build();
+                Map<String, String> mailSettings = null;
                 if (cmd.hasOption("p")) {
-                    final MonitorConfig conf = configBuild.build();
-                    final Map<String, String> mailSettings = conf.getMailSettings();
-                    configBuild = conf.toBuilder();
-                    configBuild.emailClient(new SendMailImpl(mailSettings));
+                    mailSettings = conf.getMailSettings();
                 }
+                try (InputStream in = new FileInputStream(Paths.get(conf.getJavaLoggingFile()).toFile())) {
+                    LogManager.getLogManager().readConfiguration(in);
+                    Logger.getLogger(DHISMetaDataMonitor.class.getName()).log(Level.INFO, "Starting DHIS Metadata Monitor...");
+
+                } catch (IOException | SecurityException ex) {
+                    Logger.getLogger(DHISMetaDataMonitor.class.getName()).log(Level.SEVERE, null, ex);
+                }
+                Spark.ipAddress(conf.getBindAddress());
+                configBuild = conf.toBuilder();
+                configBuild.emailClient(new SendMailImpl(mailSettings));
                 DhisMonitorApp dma = new DhisMonitorApp(configBuild.build());
                 dma.start();
             }
         } catch (ParseException ex) {
             Logger.getLogger(DHISMetaDataMonitor.class.getName()).log(Level.SEVERE, null, ex);
+            System.exit(1);
         }
     }
 
-    private static Properties openConfig(Path configDir, String filename) {
-        Properties propTmp = null;
-        try (InputStream in = new FileInputStream(configDir.resolve(filename).toFile())) {
-            propTmp = new Properties();
-            propTmp.load(in);
-        } catch (IOException ex) {
-            Logger.getLogger(DHISMetaDataMonitor.class.getName()).log(Level.SEVERE, null, ex);
-        } catch (Exception ex) {
-            Logger.getLogger(DHISMetaDataMonitor.class.getName()).log(Level.SEVERE, null, ex);
+    private static MonitorConfig.MonitorConfigBuilder openConfig() {
+        MonitorConfig.MonitorConfigBuilder configBuild = MonitorConfig.builder();
+        Path appHome = Paths.get(System.getProperty("user.home")).resolve(".sadombo");
+        Path etcDir = Paths.get("/etc/dhis-metadata-monitor");
+        File etcConfig = etcDir.resolve("config.properties").toFile();
+        File etcConfigJson = etcDir.resolve("config.json").toFile();
+        File homeConfig = appHome.resolve("config.properties").toFile();
+        File homeConfigJson = appHome.resolve("config.json").toFile();
+        File homeSecret = appHome.resolve("secret.properties").toFile();
+        if (etcConfig.exists()) {
+            try (InputStream in = new FileInputStream(etcConfig)) {
+                Properties properties = new Properties();
+                properties.load(in);
+                configBuild.addPropertiesConfig(properties);
+            } catch (IOException ex) {
+                Logger.getLogger(DHISMetaDataMonitor.class.getName()).log(Level.SEVERE, null, ex);
+            }
         }
-        return propTmp;
+        if (etcConfigJson.exists()) {
+            try (InputStream in = new FileInputStream(etcConfigJson)) {
+                Properties properties = new Properties();
+                properties.load(in);
+                configBuild.addPropertiesConfig(properties);
+            } catch (IOException ex) {
+                Logger.getLogger(DHISMetaDataMonitor.class.getName()).log(Level.SEVERE, null, ex);
+            }
+        }
+        if (homeConfig.exists()) {
+            try (InputStream in = new FileInputStream(homeConfig)) {
+                Properties properties = new Properties();
+                properties.load(in);
+                configBuild.addPropertiesConfig(properties);
+            } catch (IOException ex) {
+                Logger.getLogger(DHISMetaDataMonitor.class.getName()).log(Level.SEVERE, null, ex);
+            }
+        }
+        if (homeConfigJson.exists()) {
+            try (InputStream in = new FileInputStream(homeConfigJson)) {
+                Properties properties = new Properties();
+                properties.load(in);
+                configBuild.addPropertiesConfig(properties);
+            } catch (IOException ex) {
+                Logger.getLogger(DHISMetaDataMonitor.class.getName()).log(Level.SEVERE, null, ex);
+            }
+        }
+        if (homeSecret.exists()) {
+            try (InputStream in = new FileInputStream(homeSecret)) {
+                Properties properties = new Properties();
+                properties.load(in);
+                configBuild.addPropertiesConfig(properties);
+            } catch (IOException ex) {
+                Logger.getLogger(DHISMetaDataMonitor.class.getName()).log(Level.SEVERE, null, ex);
+            }
+        }
+
+        configBuild.appHome(appHome)
+                .addJsonPathJacksonConfiguration();
+
+        return configBuild;
     }
 }

@@ -1,15 +1,16 @@
 package zw.org.mohcc.dhis.email;
 
+import java.util.Arrays;
 import java.util.Map;
 import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.stream.Collectors;
 import javax.mail.Message;
 import javax.mail.MessagingException;
 import javax.mail.PasswordAuthentication;
 import javax.mail.Session;
 import javax.mail.Transport;
-import javax.mail.internet.AddressException;
 import javax.mail.internet.InternetAddress;
 import javax.mail.internet.MimeMessage;
 
@@ -21,7 +22,7 @@ public class SendMailImpl implements EmailClient {
 
     private static final String SMTP_HOST_NAME = "localhost";
     private static final String SMTP_PORT = "25";
-    private static final String SSL_FACTORY = "javax.net.ssl.SSLSocketFactory";
+    private static final String SOCKET_FACTORY = "javax.net.SocketFactory";
 
     private String username;
     private String password;
@@ -34,7 +35,7 @@ public class SendMailImpl implements EmailClient {
         props.put("mail.debug", "true");
         props.put("mail.smtp.port", SMTP_PORT);
         props.put("mail.smtp.socketFactory.port", SMTP_PORT);
-        props.put("mail.smtp.socketFactory.class", SSL_FACTORY);
+        props.put("mail.smtp.socketFactory.class", SOCKET_FACTORY);
         props.put("mail.smtp.socketFactory.fallback", "true");
         props.put("mail.default.email", "info@example.org");
 
@@ -93,6 +94,7 @@ public class SendMailImpl implements EmailClient {
             msg.setSubject(subject);
             msg.setContent(message, "text/html");
             Transport.send(msg, addressTo);
+            Logger.getLogger(SendMailImpl.class.getName()).log(Level.INFO, "Email sent to: " + Arrays.stream(recipients).collect(Collectors.joining(", ")));
         } catch (MessagingException ex) {
             Logger.getLogger(SendMailImpl.class.getName()).log(Level.SEVERE, null, ex);
         }

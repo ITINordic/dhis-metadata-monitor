@@ -126,6 +126,7 @@ public class DhisMonitorApp {
 
     Set<Notify> monitor() {
         try {
+            Logger.getLogger(DhisMonitorApp.class.getName()).log(Level.INFO, "Begin processing...");
             // Nothing to process
             if (config.getDataSetGroups().isEmpty()) {
                 return Collections.emptySet();
@@ -253,10 +254,10 @@ public class DhisMonitorApp {
                     Logger.getLogger(DhisMonitorApp.class.getName()).log(Level.SEVERE, null, ex);
                 }
             }
+            Logger.getLogger(DhisMonitorApp.class.getName()).log(Level.INFO, "Finished processing.");
+
             return notifySet;
-        } catch (GitProcessingFailedException ex) {
-            Logger.getLogger(DhisMonitorApp.class.getName()).log(Level.SEVERE, null, ex);
-        } catch (DiffException ex) {
+        } catch (GitProcessingFailedException | DiffException ex) {
             Logger.getLogger(DhisMonitorApp.class.getName()).log(Level.SEVERE, null, ex);
         }
         return Collections.emptySet();
@@ -277,6 +278,7 @@ public class DhisMonitorApp {
     }
 
     private void populateDataSets(String code, String parentObjectId, Map<String, Set<String>> notifyMap, Set<String> processed, final Path repo) {
+        Logger.getLogger(DhisMonitorApp.class.getName()).log(Level.INFO, "Begin processing DataSets...");
         // poulate datasets to process
         final String depObjectId = dhisUniqueObjectId(code, "dataSets");
         addDepNotifyRequest(notifyMap, depObjectId, parentObjectId);
@@ -380,23 +382,26 @@ public class DhisMonitorApp {
 
                 // parser dataset and populate toprocess with dependancies
                 DocumentContext ctx = JsonPath.using(jsonPathConf).parse(result);
-                // organisationUnits
-                List<String> orgUnits = ctx.read("$.dataSets[*].organisationUnits[*].code");
-                for (Object nodecode : orgUnits) {
-                    processOrgUnits((String) nodecode, depObjectId, notifyMap, processed, repo);
-                }
+                Logger.getLogger(DhisMonitorApp.class.getName()).log(Level.INFO, "Begin processing DataElements...");
                 // dataElements
                 List<String> dataElements = ctx.read("$.dataSets[*].dataSetElements[*].dataElement.code");
                 for (String nodecode : dataElements) {
                     processDataElements(nodecode, depObjectId, notifyMap, processed, repo);
                 }
                 // categories
+                Logger.getLogger(DhisMonitorApp.class.getName()).log(Level.INFO, "Begin processing Categories...");
                 // categories on dataSet.categoryCombo do not seem to be used uncomment to add them
                 // List<String> dataSetCategories = ctx.read("$.dataSets[*].categoryCombo.categories[*].code");
                 List<String> categories = ctx.read("$.dataSets[*].dataSetElements[*].categoryCombo.categories[*].code");
 
                 for (String nodecode : categories) {
                     processCategories(nodecode, depObjectId, notifyMap, processed, repo);
+                }
+                Logger.getLogger(DhisMonitorApp.class.getName()).log(Level.INFO, "Begin processing OrganisationUnits...");
+                // organisationUnits
+                List<String> orgUnits = ctx.read("$.dataSets[*].organisationUnits[*].code");
+                for (Object nodecode : orgUnits) {
+                    processOrgUnits((String) nodecode, depObjectId, notifyMap, processed, repo);
                 }
             } catch (IOException ex) {
                 Logger.getLogger(DhisMonitorApp.class.getName()).log(Level.SEVERE, null, ex);
