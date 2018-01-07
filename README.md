@@ -32,5 +32,5 @@ To create the ubuntu service use the files in src_install
 2. Enable service at startup by using systemctl enable dhis-metadata-monitor.service
 2. Start the service using systemctl start dhis-metadata-monitor.service
 
-You can trigger monitoring using curl localhost:4567/monitor
+You can trigger monitoring using curl localhost:4567/monitor.
 The service has to be restarted if configurations change.
