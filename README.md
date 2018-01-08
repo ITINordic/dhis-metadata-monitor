@@ -26,6 +26,7 @@ To create the ubuntu service use the files in src_install
 1. Create a user to use for the service using adduser --system --group --disabled-password dhis-metadata-monitor
 2. Create systemd unit file /etc/systemd/system/dhis-metadata-monitor.service and specify the user and group created earlier. Example available in src_install
 2. Create startup script /usr/local/bin/dhis-metadata-monitor.sh. Example available in src_install
+2. Give the user execute permissions on the shell script.
 2. Create config folder /etc/dhis-metadata-monitor/
 2. Create pid folder /var/run/dhis-metadata-monitor/
 2. Give the the service account ownership of the folders using chown dhis-metadata-monitor:dhis-metadata-monitor -R

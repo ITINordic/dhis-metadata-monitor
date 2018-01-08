@@ -1,7 +1,8 @@
 #!/bin/sh
+# Ref: http://www.jcgonzalez.com/ubuntu-16-java-service-wrapper-example
 SERVICE_NAME="DHIS Metadata Monitor"
 PATH_TO_JAR=/home/dhis-metadata-monitor/deploy/dhis-metadata-monitor-all-0.0.1.jar
-PID_PATH_NAME=/var/run/dhis-metadata-monitor/dhis-metadata-monitor-pid
+PID_PATH_NAME=/var/run/dhis-metadata-monitor/dhis-metadata-monitor.pid
 case $1 in
     start)
         echo "Starting $SERVICE_NAME ..."
@@ -32,7 +33,7 @@ case $1 in
             echo "$SERVICE_NAME stopped ...";
             rm $PID_PATH_NAME
             echo "$SERVICE_NAME starting ..."
-            nohup java -jar $PATH_TO_JAR /tmp 2>> /dev/null >> /dev/null &
+            nohup java -jar $PATH_TO_JAR -p 2>> /dev/null >> /dev/null &
                         echo $! > $PID_PATH_NAME
             echo "$SERVICE_NAME started ..."
         else

@@ -1,6 +1,7 @@
+# Ref: http://www.jcgonzalez.com/ubuntu-16-java-service-wrapper-example
 [Unit]
 Description = DHIS Metadata Monitor
-After network.target = dhis-metadata-monitor.service
+After = network.target
 
 [Service]
 Type = forking
