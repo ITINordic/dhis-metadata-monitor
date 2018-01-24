@@ -35,3 +35,49 @@ To create the ubuntu service use the files in src_install
 
 You can trigger monitoring using curl localhost:4567/monitor.
 The service has to be restarted if configurations change.
+
+## Configuring monitor service
+
+The monitor service can be configured by placing configuration files in /etc/dhis-metadata-monitor/ 
+or the home directory of the service user e.g. /home/dhis-metadata-monitor.
+
+Configurations can be specified as either properties or json files named config.properties or config.json respectively.
+
+Account information to access DHIS should be placed in secret.properties placed the service user's home directory.
+
+### config.properties syntax
+```
+apiRootUrl=https://dhis2.example.org/develop/api
+dataset.<group_1>.email=john@example.org
+dataset.<group_1>.list=<dataset_1>,<dataset_2>,...
+dataset.<group_2>.email=jane@example.org
+dataset.<group_2>.list=<dataset_1>,<dataset_3>,...
+```
+### Sample config.json
+```json
+{
+    "apiRootUrl": "https://dhis2.example.org/develop/api",
+    "dataSetGroups": [{
+        "name": "<group_1>",
+        "email": "john@example.org",
+        "dataSets": [
+            "<dataset_1>",
+            "<dataset_2>"
+        ]
+    },{
+        "name": "<group_2>",
+        "email": "jane@example.org",
+        "dataSets": [
+            "<dataset_1>",
+            "<dataset_3>"
+        ]
+    }]
+}
+```
+
+### Sample secret.properties
+```
+username=USERNAME
+password=PASSWORD
+```
+
