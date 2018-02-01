@@ -53,6 +53,8 @@ public class DHISMetaDataMonitor {
                 Map<String, String> mailSettings = null;
                 if (cmd.hasOption("p")) {
                     mailSettings = conf.getMailSettings();
+                    configBuild = conf.toBuilder();
+                    configBuild.emailClient(new SendMailImpl(mailSettings));
                 }
                 try (InputStream in = new FileInputStream(Paths.get(conf.getJavaLoggingFile()).toFile())) {
                     LogManager.getLogManager().readConfiguration(in);
@@ -62,8 +64,6 @@ public class DHISMetaDataMonitor {
                     Logger.getLogger(DHISMetaDataMonitor.class.getName()).log(Level.SEVERE, null, ex);
                 }
                 Spark.ipAddress(conf.getBindAddress());
-                configBuild = conf.toBuilder();
-                configBuild.emailClient(new SendMailImpl(mailSettings));
                 DhisMonitorApp dma = new DhisMonitorApp(configBuild.build());
                 dma.start();
             }
