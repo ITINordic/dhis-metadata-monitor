@@ -49,13 +49,26 @@ public class DHISMetaDataMonitor {
                 MonitorConfig.MonitorConfigBuilder configBuild
                         = openConfig();
 
-                final MonitorConfig conf = configBuild.build();
-                Map<String, String> mailSettings = null;
+                MonitorConfig conf = configBuild.build();
+                configBuild = conf.toBuilder();
+                
+                /********************************************************************
+                 * All configurations that depend on settings from config files should
+                 * be done in the block below. Using the partial evalution config files
+                 * BEGIN BLOCK
+                 * ******************************************************************/
+                
                 if (cmd.hasOption("p")) {
-                    mailSettings = conf.getMailSettings();
-                    configBuild = conf.toBuilder();
+                    Map<String, String> mailSettings = conf.getMailSettings();
                     configBuild.emailClient(new SendMailImpl(mailSettings));
                 }
+                
+                /********************************************************************
+                 * END BLOCK
+                 ********************************************************************/
+                
+                conf = configBuild.build();
+
                 try (InputStream in = new FileInputStream(Paths.get(conf.getJavaLoggingFile()).toFile())) {
                     LogManager.getLogManager().readConfiguration(in);
                     Logger.getLogger(DHISMetaDataMonitor.class.getName()).log(Level.INFO, "Starting DHIS Metadata Monitor...");
@@ -64,7 +77,7 @@ public class DHISMetaDataMonitor {
                     Logger.getLogger(DHISMetaDataMonitor.class.getName()).log(Level.SEVERE, null, ex);
                 }
                 Spark.ipAddress(conf.getBindAddress());
-                DhisMonitorApp dma = new DhisMonitorApp(configBuild.build());
+                DhisMonitorApp dma = new DhisMonitorApp(conf);
                 dma.start();
             }
         } catch (ParseException ex) {
