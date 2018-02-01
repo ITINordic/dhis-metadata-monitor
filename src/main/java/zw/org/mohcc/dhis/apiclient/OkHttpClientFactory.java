@@ -66,7 +66,7 @@ public class OkHttpClientFactory implements HttpClientFactory {
                 final String result = response.body().string();
                 return result == null ? "" : result;
             } catch (IOException ex) {
-                Logger.getLogger(OkHttpClient.class.getName()).log(Level.SEVERE, null, ex);
+                Logger.getLogger(OkHttpClient.class.getName()).log(Level.SEVERE, request.toString(), ex);
             }
             return null;
         }
